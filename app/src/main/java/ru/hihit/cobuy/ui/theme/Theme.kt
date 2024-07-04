@@ -16,44 +16,50 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = WarmGray,
-    onPrimary = MediumGray,
+    primary = LightPrimary,
+    onPrimary = LightText,
 
-    secondary = DarkTaupe,
-    onSecondary = PaleBrown,
+    primaryContainer = LightPrimaryContainer,
+    onPrimaryContainer = LightText,
 
-    tertiary = LightGray,
-    onTertiary = AshGray,
+    secondary = LightSecondary,
+    onSecondary = LightText,
 
-    background = LightCream,
-    onBackground = Charcoal,
+    tertiary = LightPrimary,
+    onTertiary = LightLightText,
 
-    surface = LightCream,
-    onSurface = Charcoal,
+    background = LightBackground,
+    onBackground = LightText,
+
+    surface = LightBackground,
+    onSurface = LightText,
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = MediumGray,
-    onPrimary = MediumGray,
+    primary = DarkPrimary,
+    onPrimary = DarkText,
 
-    secondary = PaleBrown,
-    onSecondary = DarkTaupe,
+    primaryContainer = DarkPrimaryContainer,
+    onPrimaryContainer = DarkText,
 
-    tertiary = AshGray,
-    onTertiary = LightGray,
+    secondary = DarkSecondary,
+    onSecondary = DarkText,
 
-    background = Charcoal,
-    onBackground = LightCream,
+    tertiary = DarkPrimary,
+    onTertiary = DarkLightText,
 
-    surface = Charcoal,
-    onSurface = LightCream,
+    background = DarkBackground,
+    onBackground = DarkText,
+
+    surface = DarkBackground,
+    onSurface = DarkText,
 )
 
 @Composable
 fun CoBuyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

@@ -1,5 +1,7 @@
 package ru.hihit.cobuy.ui.components.screens
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
@@ -15,7 +17,9 @@ import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -26,5 +30,8 @@ fun MainScreen() {
     vms[Route.Group] = viewModel(key = Route.Group) { GroupViewModel() }
     vms[Route.List] = viewModel(key = Route.List) { ListViewModel() }
     vms[Route.Settings] = viewModel(key = Route.Settings) { SettingsViewModel() }
-    NavGraph(navHostController = navController, vms = vms)
+
+    Surface(color = MaterialTheme.colorScheme.background) {
+        NavGraph(navHostController = navController, vms = vms)
+    }
 }

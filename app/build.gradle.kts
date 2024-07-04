@@ -52,6 +52,9 @@ android {
 }
 
 dependencies {
+    implementation(libs.google.accompanist.swiperefresh)
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.coil.compose)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.navigation.compose)
