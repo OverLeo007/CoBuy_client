@@ -3,6 +3,7 @@
 ![dev](https://img.shields.io/badge/dev-overLeo-yellow?link=https%3A%2F%2Fgithub.com%2FOverLeo007)
 ![backend](https://img.shields.io/badge/backend_repo-gray?logo=laravel&link=https%3A%2F%2Fgithub.com%2Fwaffflezz%2FCoBuy_server)
 [![wakatime](https://wakatime.com/badge/github/OverLeo007/CoBuy_client.svg)](https://wakatime.com/badge/github/OverLeo007/CoBuy_client)
+![license](https://img.shields.io/badge/license-MIT-green?link=https%3A%2F%2Fgithub.com%2FOverLeo007%2FCoBuy_client%2Fblob%2Fmaster%2FLICENSE.txt)
 > 🛒 Collaborative Shopping List Application
 ## 📋 Overview
 This application allows users to create collaborative shopping lists by forming groups called rooms. Each room represents a distinct shopping group, such as for home, work, or events. Users within a room can add, remove, and mark items as purchased in shared shopping lists.
