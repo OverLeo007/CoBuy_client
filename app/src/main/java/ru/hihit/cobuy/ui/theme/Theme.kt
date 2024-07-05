@@ -33,6 +33,8 @@ private val LightColorScheme = lightColorScheme(
 
     surface = LightBackground,
     onSurface = LightText,
+
+    surfaceTint = LightDivider
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -53,6 +55,8 @@ private val DarkColorScheme = darkColorScheme(
 
     surface = DarkBackground,
     onSurface = DarkText,
+
+    surfaceTint = DarkDivider
 )
 
 @Composable

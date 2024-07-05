@@ -28,11 +28,19 @@ fun NavGraph(
         composable(Route.Groups) {
             GroupsScreen(navHostController = navHostController, vm = vms[Route.Groups] as GroupsViewModel)
         }
-        composable(Route.Group) {
-            GroupScreen(navHostController = navHostController, vm = vms[Route.Group] as GroupViewModel)
+//        composable(Route.Group) {
+//            GroupScreen(navHostController = navHostController, vm = vms[Route.Group] as GroupViewModel)
+//        }
+        // TODO: Сделать метод апдейта vm с подтягиванием данных при изменении id
+        composable(Route.Group + "/{groupId}") {
+            val vm = vms[Route.Group] as GroupViewModel
+            vm.groupId = it.arguments?.getString("groupId")?.toInt() ?: 0
+            GroupScreen(navHostController = navHostController, vm = vm)
         }
-        composable(Route.List) {
-            ListScreen(navHostController = navHostController, vm = vms[Route.List] as ListViewModel)
+        composable(Route.List+ "/{listId}") {
+            val vm = vms[Route.List] as ListViewModel
+            vm.listId = it.arguments?.getString("listId")?.toInt() ?: 0
+            ListScreen(navHostController = navHostController, vm = vm)
         }
         composable(Route.Settings) {
             SettingsScreen(navHostController = navHostController, vm = vms[Route.Settings] as SettingsViewModel)
