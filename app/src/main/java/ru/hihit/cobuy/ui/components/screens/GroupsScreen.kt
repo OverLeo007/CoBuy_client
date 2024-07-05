@@ -48,12 +48,12 @@ import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
+import kotlin.random.Random
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsScreen(
     navHostController: NavHostController,
-    vm: GroupsViewModel = GroupsViewModel()
+    vm: GroupsViewModel
 ) {
     val context = LocalContext.current
 
@@ -95,12 +95,12 @@ fun GroupsScreen(
                     modifier = Modifier.fillMaxWidth(),
 //                    contentPadding = PaddingValues(16.dp)
                 ) {
-                    items(56) {
+                    items(5) {
                         GroupItem(
                             imageUrl = "https://sun125-1.userapi.com/s/v1/ig2/AIxZdnOPgs7aVJZn24luWz84Fg1aa2iyzU6GbG-qp1065HTamsIBsBnINypL_PRcXVNEKZP6yZc_9oWq5UciHnW-.jpg?size=50x0&quality=96&crop=0,0,984,984&ava=1",
                             groupName = "Прогеры №$it",
-                            peopleCount = 69,
-                            listCount = 1488,
+                            peopleCount = Random.nextInt(1, 10),
+                            listCount = Random.nextInt(1, 10),
                             onClick = {
                                 Toast.makeText(context, "Open group $it", Toast.LENGTH_SHORT).show()
                                 navHostController.navigate(Route.Group + "/${it}")

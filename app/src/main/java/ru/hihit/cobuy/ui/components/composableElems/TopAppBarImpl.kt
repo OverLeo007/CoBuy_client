@@ -11,7 +11,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
+import ru.hihit.cobuy.R
 import ru.hihit.cobuy.ui.components.navigation.Route
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +34,7 @@ fun TopAppBarImpl(
                 enabled = isBackArrow
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ArrowBack,
+                    painterResource(id = R.drawable.arrow_back_ios_24px),
                     contentDescription = "Back",
                     tint = if (isBackArrow) MaterialTheme.colorScheme.onSurface else Color.Transparent
                 )
