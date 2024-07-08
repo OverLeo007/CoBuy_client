@@ -52,6 +52,8 @@ android {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/com.google.zxing/core
+    implementation("com.google.zxing:core:3.5.3")
     implementation(libs.google.accompanist.swiperefresh)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.coil.compose)

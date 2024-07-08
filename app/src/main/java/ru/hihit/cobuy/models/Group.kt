@@ -4,7 +4,9 @@ data class Group(
     val id: Int = 0,
     val name: String,
     val avaUrl: String,
-    // TODO: Add users
+    val inviteLink: String = "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    val members: List<User> = emptyList(),
+
 ) {
     companion object {
         fun default(): Group {

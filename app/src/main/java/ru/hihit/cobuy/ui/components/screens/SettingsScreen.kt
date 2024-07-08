@@ -1,6 +1,9 @@
 package ru.hihit.cobuy.ui.components.screens
 
+import android.net.Uri
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,6 +50,16 @@ fun SettingsScreen(
     navHostController: NavHostController,
     vm: SettingsViewModel
 ) {
+    var imageUri by remember { mutableStateOf<Uri?>(Uri.parse(vm.avatarUrl)) }
+
+    val launcher =
+        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                imageUri = it
+                vm.onAvatarSelected(it) // Вызовите функцию обратного вызова с Uri изображения
+            }
+        }
+
     val context = LocalContext.current
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
@@ -70,7 +84,7 @@ fun SettingsScreen(
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data("https://sun125-1.userapi.com/s/v1/ig2/bsKSb_3JolWpjJ5mez44ii5lzdgwXsl4fOtV685zcybEWn7h1TUhPaGwOvyCz-tZveB4XzU1tNT_SDnzxZzrAC07.jpg?quality=95&crop=212,824,1052,1052&as=32x32,48x48,72x72,108x108,160x160,240x240,360x360,480x480,540x540,640x640,720x720&ava=1&u=5_m3lbtS8y6Kw-IhyX0ct7f_g-PoWL8G1p9eSoFoBHM&cs=200x200")
+                        .data(vm.imageUri)
                         .crossfade(true)
                         .build(),
                     contentDescription = "Avatar",
@@ -79,10 +93,10 @@ fun SettingsScreen(
                         .size(127.dp)
                         .clip(CircleShape)
                         .clickable {
-                            Toast
-                                .makeText(context, "Edit avatar", Toast.LENGTH_SHORT)
-                                .show()
-                        }
+                            launcher.launch("image/*")
+                        },
+                    placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
+
                 )
                 Spacer(modifier = Modifier.size(10.dp))
                 Row(
