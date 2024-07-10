@@ -19,10 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +36,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -51,6 +58,10 @@ fun SettingsScreen(
     vm: SettingsViewModel
 ) {
     var imageUri by remember { mutableStateOf<Uri?>(Uri.parse(vm.avatarUrl)) }
+
+    var isEditing by remember { mutableStateOf(false) }
+    var isError by remember { mutableStateOf(false) }
+    var text by remember { mutableStateOf(vm.user.name) }
 
     val launcher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -103,10 +114,50 @@ fun SettingsScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Леф", style = MaterialTheme.typography.titleLarge)
-                    IconButton(onClick = {
-                        Toast.makeText(context, "Edit name", Toast.LENGTH_SHORT).show()
-                    }) {
+                    Icon(
+                        painterResource(id = R.drawable.edit_square_24px),
+                        contentDescription = "List Icon",
+                        modifier = Modifier
+                            .sizeIn(maxHeight = MaterialTheme.typography.titleLarge.fontSize.value.dp),
+                        tint = Color.Transparent
+                    )
+                    if (isEditing) {
+                        OutlinedTextField(
+//                            modifier = Modifier.weight(1F),
+                            value = text,
+                            onValueChange = { newText -> text = newText },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Text,
+                                imeAction = ImeAction.Done
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    if (text.length in 3..100) {
+                                        isEditing = false
+                                        isError = false
+                                        vm.onNameChanged(text)
+                                    }
+                                    isError = true
+                                }
+                            ),
+                            singleLine = true
+                        )
+
+                    } else {
+                        Text(
+//                            modifier = Modifier.weight(1F),
+                            text = text,
+                            fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                    IconButton(
+                        onClick = {
+                            isEditing = true
+                        },
+                        enabled = !isEditing
+                    ) {
                         Icon(
                             painterResource(id = R.drawable.edit_square_24px),
                             contentDescription = "List Icon",

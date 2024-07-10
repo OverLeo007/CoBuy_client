@@ -2,27 +2,44 @@ package ru.hihit.cobuy.ui.components.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,17 +47,34 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
+import ru.hihit.cobuy.R
+import ru.hihit.cobuy.models.Product
+import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.ui.components.composableElems.AddButton
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
+import ru.hihit.cobuy.ui.components.composableElems.UniversalModal
 import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
 import ru.hihit.cobuy.ui.theme.getColorByHash
 
@@ -54,6 +88,17 @@ fun ListScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
+    val openAddProductModal = remember { mutableStateOf(false) }
+
+    when {
+        openAddProductModal.value -> AddProductModal(
+            onDismiss = { openAddProductModal.value = false },
+            onAdd = {
+                vm.onProductAdded(it)
+                openAddProductModal.value = false
+            }
+        )
+    }
 
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
@@ -70,25 +115,7 @@ fun ListScreen(
         Column {
             TopAppBarImpl(
                 title = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable {
-                                Toast
-                                    .makeText(context, "Open group edit", Toast.LENGTH_SHORT)
-                                    .show()
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
-                        ) {
-                            Text(text = "List ${vm.listId}")
-                        }
-                    }
+                    ListEditableTitle(vm.productList.name) { vm.onNameChanged(it) }
                 },
                 navHostController = navHostController,
             )
@@ -104,38 +131,22 @@ fun ListScreen(
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp)
                 ) {
                     items(10) {
-                        var isPlanned by remember { mutableStateOf(false) }
-                        var isBought by remember { mutableStateOf(false) }
-                        GoodItem(
-                            id = it,
-                            title = "Good $it",
-                            description = "Lorem Ipsum $it - это текст-\"рыба\", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной \"рыбой\" для текстов на латинице с начала XVI века. В то время некий безымянный печатник создал большую коллекцию размеров и форм шрифтов, используя Lorem Ipsum для распечатки образцов. Lorem Ipsum не только успешно пережил без заметных изменений пять веков, но и перешагнул в электронный дизайн. Его популяризации в новое время послужили публикация листов Letraset с образцами Lorem Ipsum в 60-х годах и, в более недавнее время, программы электронной вёрстки типа Aldus PageMaker, в шаблонах которых используется Lorem Ipsum.\",",
-                            onBuy = {
-                                isBought = !isBought
-                                isPlanned = false
+                        ProductItem(
+                            product = Product(id = it),
+                            onStatusChanged = { product -> vm.onProductStatusChanged(product) },
+                            onDelete = { product ->
+                                vm.onProductDeleted(product)
                             },
-                            onPlan = {
-                                isBought = false
-                                isPlanned = !isPlanned
-                            },
-                            onDelete = {
-                                Toast.makeText(
-                                    context,
-                                    "Good $it deleted",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            },
-                            isBought = isBought,
-                            isPlanned = isPlanned
-
+                            onEdited = { product ->
+                                vm.onProductEdited(product)
+                            }
                         )
                     }
-
                 }
             }
         }
         AddButton(
-            onClick = { Toast.makeText(context, "Good added", Toast.LENGTH_SHORT).show() },
+            onClick = { openAddProductModal.value = true },
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
@@ -143,18 +154,73 @@ fun ListScreen(
 }
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-@Preview
-fun GoodItem(
-    id: Int = 0,
-    title: String = "title",
-    description: String = "Lorem Ipsum - это текст-\"рыба\", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной \"рыбой\" для текстов на латинице с начала XVI века. В то время некий безымянный печатник создал большую коллекцию размеров и форм шрифтов, используя Lorem Ipsum для распечатки образцов. Lorem Ipsum не только успешно пережил без заметных изменений пять веков, но и перешагнул в электронный дизайн. Его популяризации в новое время послужили публикация листов Letraset с образцами Lorem Ipsum в 60-х годах и, в более недавнее время, программы электронной вёрстки типа Aldus PageMaker, в шаблонах которых используется Lorem Ipsum.",
-    isBought: Boolean = false,
-    isPlanned: Boolean = true,
-    onBuy: (isBought: Boolean) -> Unit = {},
-    onPlan: (isPlanned: Boolean) -> Unit = {},
-    onDelete: () -> Unit = {}
+fun ProductItem(
+    product: Product = Product(),
+    onStatusChanged: (Product) -> Unit = {},
+    onEdited: (Product) -> Unit = {},
+    onDelete: (Product) -> Unit = {}
 ) {
+    var isBought by remember { mutableStateOf(false) }
+    var isPlanned by remember { mutableStateOf(false) }
+    val statusChanged = remember { mutableStateOf(false) }
+    when {
+        statusChanged.value -> {
+            when (product.status) {
+                ProductStatus.BOUGHT -> {
+                    isBought = true
+                    isPlanned = false
+                }
+
+                ProductStatus.PLANNED -> {
+                    isBought = false
+                    isPlanned = true
+                }
+
+                ProductStatus.NONE -> {
+                    isBought = false
+                    isPlanned = false
+                }
+            }
+            statusChanged.value = false
+        }
+    }
+
+    val openModal = remember { mutableStateOf(false) }
+    val openEditModal = remember {
+        mutableStateOf(false)
+    }
+    val modalButtons = mapOf<String, (Product) -> Unit>(
+        "Удалить" to {
+            onDelete(product)
+            openModal.value = false
+        },
+        "Редактировать" to {
+            openEditModal.value = true
+            openModal.value = false
+        },
+    )
+
+    when {
+        openModal.value ->
+            UniversalModal(
+                subject = product,
+                buttons = modalButtons,
+                onDismiss = { openModal.value = false }
+            )
+
+        openEditModal.value ->
+            EditProductModal(
+                product = product,
+                onEdit = { editedProduct ->
+                    onEdited(editedProduct)
+                    openEditModal.value = false
+                },
+                onDismiss = { openEditModal.value = false }
+            )
+    }
+
     Card(
         Modifier
             .height(200.dp)
@@ -163,11 +229,13 @@ fun GoodItem(
             .copy(containerColor = MaterialTheme.colorScheme.primaryContainer),
         shape = RoundedCornerShape(24.dp),
     ) {
-        Row {
+        Row(
+            Modifier.combinedClickable(onClick = { }, onLongClick = { openModal.value = true })
+        ) {
             Box(
                 modifier = Modifier
                     .weight(0.1f)
-                    .background(getColorByHash(title))
+                    .background(getColorByHash(product.name))
                     .fillMaxHeight()
             ) {
                 Text("")
@@ -182,13 +250,13 @@ fun GoodItem(
                     modifier = Modifier
 
                 ) {
-                    Text(title, style = MaterialTheme.typography.titleLarge)
+                    Text(product.name, style = MaterialTheme.typography.titleLarge)
                     HorizontalDivider(
                         modifier = Modifier.fillMaxWidth(0.3F),
                         color = MaterialTheme.colorScheme.surfaceTint
                     )
                     Text(
-                        description,
+                        product.description,
                         maxLines = 3,
                         style = MaterialTheme.typography.bodyMedium,
                         overflow = TextOverflow.Ellipsis
@@ -201,25 +269,53 @@ fun GoodItem(
                         .align(Alignment.BottomEnd),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    val buyButtonColor = if (isBought) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
-                    val planButtonColor = if (isPlanned) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
+                    val buyButtonColor =
+                        if (isBought) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
+                    val planButtonColor =
+                        if (isPlanned) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
 
                     Button(
                         modifier = Modifier.padding(PaddingValues(end = 8.dp)),
-                        onClick = { onPlan(isPlanned) },
+                        onClick = {
+                            product.status =
+                                if (product.status == ProductStatus.PLANNED) ProductStatus.NONE else ProductStatus.PLANNED
+                            onStatusChanged(product)
+                            statusChanged.value = true
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = planButtonColor),
-                        border = if (isPlanned) null else BorderStroke(1.dp, color = MaterialTheme.colorScheme.surfaceTint),
+                        border = if (isPlanned) null else BorderStroke(
+                            1.dp,
+                            color = MaterialTheme.colorScheme.surfaceTint
+                        ),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 1.dp, bottom = 1.dp)
+                        contentPadding = PaddingValues(
+                            start = 12.dp,
+                            end = 12.dp,
+                            top = 1.dp,
+                            bottom = 1.dp
+                        )
                     ) {
                         Text(if (isPlanned) "Planned" else "Plan")
                     }
                     Button(
-                        onClick = { onBuy(isBought) },
+                        onClick = {
+                            product.status =
+                                if (product.status == ProductStatus.BOUGHT) ProductStatus.NONE else ProductStatus.BOUGHT
+                            onStatusChanged(product)
+                            statusChanged.value = true
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = buyButtonColor),
-                        border = if (isBought) null else BorderStroke(1.dp, color = MaterialTheme.colorScheme.surfaceTint),
+                        border = if (isBought) null else BorderStroke(
+                            1.dp,
+                            color = MaterialTheme.colorScheme.surfaceTint
+                        ),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 1.dp, bottom = 1.dp)
+                        contentPadding = PaddingValues(
+                            start = 12.dp,
+                            end = 12.dp,
+                            top = 1.dp,
+                            bottom = 1.dp
+                        )
                     ) {
                         Text(if (isBought) "Bought" else "Buy")
                     }
@@ -228,4 +324,356 @@ fun GoodItem(
         }
     }
 
+}
+
+
+@Composable
+fun ListEditableTitle(
+    listName: String = "List",
+    onNameChanged: (String) -> Unit = {},
+) {
+
+    var isNameEditing by remember {
+        mutableStateOf(false)
+    }
+    var isNameCorrect by remember {
+        mutableStateOf(true)
+    }
+
+    var text by remember { mutableStateOf(listName) }
+
+
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .clickable {
+                isNameEditing = true
+            },
+        contentAlignment = Alignment.Center
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            if (!isNameEditing) {
+                Text(text = text)
+            } else {
+                OutlinedTextField(
+                    textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
+                    value = text,
+                    onValueChange = { newText -> text = newText },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            isNameCorrect = text.isNotEmpty()
+                            if (isNameCorrect) {
+                                onNameChanged(text)
+                                isNameEditing = false
+                            }
+                        }
+                    ),
+                    singleLine = true,
+                )
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@Composable
+@Preview
+fun AddProductModal(
+    onAdd: (Product) -> Unit = {},
+    onDismiss: () -> Unit = {},
+    title: String = "Новый продукт",
+    namePlaceholder: String = "Название продукта",
+) {
+    var isNameCorrect by remember { mutableStateOf(true) }
+
+    var nameText by remember { mutableStateOf("") }
+    var descriptionText by remember { mutableStateOf("") }
+
+
+    val focusManager = LocalFocusManager.current
+    val (a, b) = FocusRequester.createRefs()
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.8F),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Column {
+                TopAppBar(
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = title,
+                                color = MaterialTheme.colorScheme.onTertiary
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                onDismiss()
+                            },
+                        ) {
+                            Icon(
+                                painterResource(id = R.drawable.arrow_back_ios_24px),
+                                contentDescription = "Back",
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {},
+                            enabled = false
+                        ) {
+                            Icon(
+                                Icons.Filled.Settings,
+                                contentDescription = "Settings",
+                                tint = Color.Transparent
+                            )
+                        }
+                    }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
+                Spacer(modifier = Modifier.size(10.dp))
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    TextField(
+                        modifier = Modifier
+                            .focusRequester(a)
+                            .focusProperties { next = b },
+                        value = nameText,
+                        onValueChange = { newText -> nameText = newText },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                isNameCorrect = nameText.isNotEmpty()
+                                if (isNameCorrect) focusManager.moveFocus(FocusDirection.Next)
+                            }
+                        ),
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = namePlaceholder,
+                                color = MaterialTheme.colorScheme.onTertiary
+                            )
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    TextField(
+                        modifier = Modifier
+                            .focusRequester(b)
+                            .focusProperties { previous = a },
+                        value = descriptionText,
+                        onValueChange = { newText -> descriptionText = newText },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                        ),
+                        minLines = 3,
+                        placeholder = {
+                            Text(
+                                text = "Описание продукта",
+                                color = MaterialTheme.colorScheme.onTertiary
+                            )
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
+                    Spacer(modifier = Modifier.size(20.dp))
+                    if (!isNameCorrect) {
+                        Text(
+                            text = "Введите название продукта",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.size(16.dp))
+                    }
+                    Button(onClick = {
+                        isNameCorrect = nameText.isNotEmpty()
+                        if (isNameCorrect)
+                            onAdd(Product(name = nameText, description = descriptionText))
+                    }) {
+                        Text(text = "Готово")
+                    }
+                    Spacer(modifier = Modifier.size(16.dp))
+                }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
+@Composable
+fun EditProductModal(
+    product: Product,
+    onEdit: (Product) -> Unit = {},
+    onDismiss: () -> Unit = {},
+    title: String = "Редактирование продукта",
+) {
+    var isNameCorrect by remember { mutableStateOf(true) }
+
+    var nameText by remember { mutableStateOf(product.name) }
+    var descriptionText by remember { mutableStateOf(product.description) }
+
+
+    val focusManager = LocalFocusManager.current
+    val (a, b) = FocusRequester.createRefs()
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.8F),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Column {
+                TopAppBar(
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = title,
+                                color = MaterialTheme.colorScheme.onTertiary
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                onDismiss()
+                            },
+                        ) {
+                            Icon(
+                                painterResource(id = R.drawable.arrow_back_ios_24px),
+                                contentDescription = "Back",
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {},
+                            enabled = false
+                        ) {
+                            Icon(
+                                Icons.Filled.Settings,
+                                contentDescription = "Settings",
+                                tint = Color.Transparent
+                            )
+                        }
+                    }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
+                Spacer(modifier = Modifier.size(10.dp))
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    TextField(
+                        modifier = Modifier
+                            .focusRequester(a)
+                            .focusProperties { next = b },
+                        value = nameText,
+                        onValueChange = { newText -> nameText = newText },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Next
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onNext = {
+                                isNameCorrect = nameText.isNotEmpty()
+                                if (isNameCorrect) focusManager.moveFocus(FocusDirection.Next)
+                            }
+                        ),
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    TextField(
+                        modifier = Modifier
+                            .focusRequester(b)
+                            .focusProperties { previous = a },
+                        value = descriptionText,
+                        onValueChange = { newText -> descriptionText = newText },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                        ),
+                        minLines = 3,
+                        placeholder = {
+                            Text(
+                                text = "Описание продукта",
+                                color = MaterialTheme.colorScheme.onTertiary
+                            )
+                        },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
+                        )
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
+                    Spacer(modifier = Modifier.size(20.dp))
+                    if (!isNameCorrect) {
+                        Text(
+                            text = "Введите название продукта",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.size(16.dp))
+                    }
+                    Button(onClick = {
+                        isNameCorrect = nameText.isNotEmpty()
+                        if (isNameCorrect)
+                            onEdit(product.copy(name = nameText, description = descriptionText))
+                    }) {
+                        Text(text = "Готово")
+                    }
+                    Spacer(modifier = Modifier.size(16.dp))
+                }
+            }
+        }
+    }
 }

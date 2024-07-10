@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +71,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.models.Group
+import ru.hihit.cobuy.models.ProductList
 import ru.hihit.cobuy.models.User
 import ru.hihit.cobuy.ui.components.composableElems.AddButton
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
@@ -91,19 +93,32 @@ fun GroupScreen(
     var isRefreshing by remember { mutableStateOf(false) }
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
-    val openModal = remember {
+    val openEditModal = remember {
+        mutableStateOf(false)
+    }
+
+    val openAddListModal = remember {
         mutableStateOf(false)
     }
 
     when {
-        openModal.value -> EditModal(
-            onDismissRequest = { openModal.value = false },
+        openEditModal.value -> EditModal(
+            onDismissRequest = { openEditModal.value = false },
             group = Group.default(), // TODO: pass group from vm
             onImageSelected = { vm.onImageSelected(it) },
             onUserRemoved = { vm.onUserRemoved(it) },
             onNameChanged = { vm.onNameChanged(it) }
         )
+        openAddListModal.value -> AddListModal(
+            onAdd = {
+                vm.onAddList(it)
+                openAddListModal.value = false
+            },
+            onDismiss = { openAddListModal.value = false }
+        )
+
     }
+
 
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
@@ -126,7 +141,7 @@ fun GroupScreen(
                                 Toast
                                     .makeText(context, "Open group edit", Toast.LENGTH_SHORT)
                                     .show()
-                                openModal.value = true
+                                openEditModal.value = true
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -182,7 +197,7 @@ fun GroupScreen(
             }
         }
         AddButton(
-            onClick = { Toast.makeText(context, "List added", Toast.LENGTH_SHORT).show() },
+            onClick = { openAddListModal.value = true },
             modifier = Modifier.align(Alignment.BottomEnd)
         )
     }
@@ -328,6 +343,7 @@ fun EditModal(
                                 onClick = {
                                     onDismissRequest()
                                 },
+                                enabled = false
                             ) {
                                 Icon(
                                     Icons.Filled.Settings,
@@ -480,15 +496,12 @@ fun EditModal(
                                 }
                                 HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
                             }
-
                         }
-
                     }
                 }
             }
         }
     }
-
 }
 
 
@@ -579,7 +592,6 @@ fun AddUserModal(
 
 
 @Composable
-@Preview
 fun RemoveUserModal(
     onDismissRequest: () -> Unit = {},
     onConfirmRequest: (User) -> Unit = {},
@@ -606,8 +618,9 @@ fun RemoveUserModal(
             )
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth().
-                padding(PaddingValues(bottom = 8.dp)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(PaddingValues(bottom = 8.dp)),
             ) {
                 TextButton(
                     onClick = { onDismissRequest() },
@@ -628,6 +641,125 @@ fun RemoveUserModal(
                         text = "Удалить",
                         color = MaterialTheme.colorScheme.onTertiary
                     )
+                }
+            }
+        }
+    }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+@Preview
+fun AddListModal(
+    onAdd: (ProductList) -> Unit = {},
+    onDismiss: () -> Unit = {},
+    title: String = "Новый список",
+    namePlaceholder: String = "Название списка",
+    ) {
+    var isNameCorrect by remember { mutableStateOf(true) }
+
+    var text by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.8F),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors().copy(
+                containerColor = MaterialTheme.colorScheme.primaryContainer
+            )
+        ) {
+            Column {
+                TopAppBar(
+                    title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = title,
+                                color = MaterialTheme.colorScheme.onTertiary
+                            )
+                        }
+                    },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = {
+                                onDismiss()
+                            },
+                        ) {
+                            Icon(
+                                painterResource(id = R.drawable.arrow_back_ios_24px),
+                                contentDescription = "Back",
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(
+                            onClick = {},
+                            enabled = false
+                        ) {
+                            Icon(
+                                Icons.Filled.Settings,
+                                contentDescription = "Settings",
+                                tint = Color.Transparent
+                            )
+                        }
+                    }
+                )
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
+                Spacer(modifier = Modifier.size(10.dp))
+
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = { newText -> text = newText },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                isNameCorrect = text.isNotEmpty()
+                                if (isNameCorrect) {
+                                    onAdd(ProductList(name = text))
+                                    onDismiss()
+                                }
+                            }
+                        ),
+                        singleLine = true,
+                        placeholder = {
+                            Text(
+                                text = namePlaceholder,
+                                color = MaterialTheme.colorScheme.onTertiary
+                            )
+                        },
+                    )
+                    Spacer(modifier = Modifier.size(10.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
+                    Spacer(modifier = Modifier.size(20.dp))
+                    if (!isNameCorrect) {
+                        Text(
+                            text = "Введите название списка",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.size(16.dp))
+                    }
+                    Button(onClick = {
+                        isNameCorrect = text.isNotEmpty()
+                        if (isNameCorrect)
+                            onAdd(ProductList(name = text))
+                    }) {
+                        Text(text = "Готово")
+                    }
+                    Spacer(modifier = Modifier.size(16.dp))
                 }
             }
         }

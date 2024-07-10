@@ -20,7 +20,7 @@ val DarkText = Color(0xFFF4F4F4)
 val DarkLightText = Color(0xFFC5C5C5)
 val DarkDivider = Color(0xFF888178)
 
-val goodsColors = arrayOf(
+val productsColors = arrayOf(
     Color(0xFFD9D9D9),
     Color(0xFF808080),
     Color(0xFFE2E48D),
@@ -42,8 +42,8 @@ val goodsColors = arrayOf(
 
 fun getColorByHash(input: String): Color {
     val hash = abs(input.hashCode())
-    val index = hash % goodsColors.size
-    return goodsColors[index]
+    val index = hash % productsColors.size
+    return productsColors[index]
 }
 
 

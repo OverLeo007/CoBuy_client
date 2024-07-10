@@ -2,11 +2,13 @@ package ru.hihit.cobuy.models
 
 data class Group(
     val id: Int = 0,
-    val name: String,
-    val avaUrl: String,
-    val inviteLink: String = "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    val members: List<User> = emptyList(),
-
+    var name: String,
+    var avaUrl: String,
+    var inviteLink: String = "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    var owner: User = User.default(),
+    var members: List<User> = emptyList(),
+    var membersCount: Int = 0,
+    var listsCount: Int = 0
 ) {
     companion object {
         fun default(): Group {

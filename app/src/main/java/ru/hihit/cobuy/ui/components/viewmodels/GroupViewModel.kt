@@ -3,6 +3,7 @@ package ru.hihit.cobuy.ui.components.viewmodels
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import ru.hihit.cobuy.models.ProductList
 import ru.hihit.cobuy.models.User
 
 class GroupViewModel() : ViewModel() {
@@ -19,6 +20,10 @@ class GroupViewModel() : ViewModel() {
 
     fun onNameChanged(name: String) {
         Log.d("GroupViewModel", "onNameChanged: $name")
+    }
+
+    fun onAddList(productList: ProductList) {
+        Log.d("GroupViewModel", "onAddList: $productList")
     }
 
 }

@@ -39,7 +39,8 @@ fun NavGraph(
         }
         composable(Route.List+ "/{listId}") {
             val vm = vms[Route.List] as ListViewModel
-            vm.listId = it.arguments?.getString("listId")?.toInt() ?: 0
+            // TODO: Пофиксить способ получения вм, она не должна меняться а создаваться новая
+            vm.productList.id = it.arguments?.getString("listId")?.toInt() ?: 0
             ListScreen(navHostController = navHostController, vm = vm)
         }
         composable(Route.Settings) {
