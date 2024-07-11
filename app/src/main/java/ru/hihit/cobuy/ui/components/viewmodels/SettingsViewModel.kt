@@ -25,4 +25,8 @@ class SettingsViewModel() : ViewModel() {
         this.imageUri = imageUri
     }
 
+    fun onLogout() {
+        Log.d("SettingsViewModel", "onLogout")
+    }
+
 }

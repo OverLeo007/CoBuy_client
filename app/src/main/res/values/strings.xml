@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CoBuy</string>
+    <string name="api_url">http://cobuy.sytes.net/</string>
 </resources>

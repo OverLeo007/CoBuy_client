@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("kotlin-kapt")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
 
 }
 
@@ -51,9 +52,25 @@ android {
     }
 }
 
+val cameraxVersion = "1.0.2"
 dependencies {
-    // https://mvnrepository.com/artifact/com.google.zxing/core
-    implementation("com.google.zxing:core:3.5.3")
+    // Retrofit
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.jetbrains.kotlinx.serialization.json)
+    implementation(libs.okhttp)
+    implementation(libs.retrofit)
+// Retrofit with Scalar Converter
+
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    //Barcode
+    implementation(libs.barcode.scanning)
+    //Camera Permission
+    implementation(libs.accompanist.permissions)
+
+    implementation(libs.core)
     implementation(libs.google.accompanist.swiperefresh)
     implementation(libs.androidx.swiperefreshlayout)
     implementation(libs.coil.compose)

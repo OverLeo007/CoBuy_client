@@ -10,6 +10,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import ru.hihit.cobuy.ui.components.navigation.NavGraph
 import ru.hihit.cobuy.ui.components.navigation.Route
+import ru.hihit.cobuy.ui.components.viewmodels.AuthViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
@@ -30,8 +31,11 @@ fun MainScreen(
     vms[Route.Group] = viewModel(key = Route.Group) { GroupViewModel() }
     vms[Route.List] = viewModel(key = Route.List) { ListViewModel() }
     vms[Route.Settings] = viewModel(key = Route.Settings) { SettingsViewModel() }
+    vms[Route.Authorization] = viewModel(key = Route.Authorization) { AuthViewModel() }
+
+
 
     Surface(color = MaterialTheme.colorScheme.background) {
-        NavGraph(navHostController = navController, vms = vms)
+        NavGraph(navHostController = navController, vms = vms, startDestination = Route.Authorization)
     }
 }

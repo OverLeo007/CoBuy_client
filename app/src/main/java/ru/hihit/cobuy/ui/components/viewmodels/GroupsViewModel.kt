@@ -13,4 +13,9 @@ class GroupsViewModel() : ViewModel() {
         Log.d("GroupsViewModel", "deleteGroup: $group")
     }
 
+    fun joinGroup(groupId: String): Boolean {
+        Log.d("GroupsViewModel", "joinGroup: $groupId")
+        return true // TODO: Если ссылка корректная
+    }
+
 }

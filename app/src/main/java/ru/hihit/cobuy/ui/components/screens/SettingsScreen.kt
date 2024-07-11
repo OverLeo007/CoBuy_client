@@ -50,6 +50,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
+import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
 
 @Composable
@@ -85,7 +86,22 @@ fun SettingsScreen(
                     }
                 },
                 navHostController = navHostController,
-                isSettings = false
+                actions = {
+                    IconButton(
+                        onClick = {
+                            vm.onLogout()
+                            navHostController.navigate(Route.Authorization)
+                        }
+
+                    ) {
+                        Icon(
+                            painterResource(id = R.drawable.logout_24px),
+                            contentDescription = "Logout icon",
+                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.size(20.dp))

@@ -1,5 +1,6 @@
 package ru.hihit.cobuy.ui.components.screens
 
+import android.Manifest
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -65,6 +66,9 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.delay
 import ru.hihit.cobuy.R
@@ -77,12 +81,14 @@ import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
 import kotlin.random.Random
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun GroupsScreen(
     navHostController: NavHostController,
     vm: GroupsViewModel
 ) {
     val context = LocalContext.current
+    val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
 
     var isRefreshing by remember { mutableStateOf(false) }
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
@@ -124,7 +130,26 @@ fun GroupsScreen(
                     }
                 },
                 navHostController = navHostController,
-                isBackArrow = false
+                isBackArrow = false,
+                navigation = {
+                    IconButton(
+                        onClick = {
+                            val launchPermission: (cameraPermissionState: PermissionState) -> Unit = {
+                                if (!it.hasPermission) {
+                                    it.launchPermissionRequest()
+                                }
+                            }
+
+                            launchPermission(cameraPermissionState)
+                            navHostController.navigate(Route.Scanner)
+                        },
+                    ) {
+                        Icon(
+                            painterResource(id = R.drawable.qr_code_scanner_24px),
+                            contentDescription = "Scan QR",
+                        )
+                    }
+                }
             )
 
             SwipeRefreshImpl(

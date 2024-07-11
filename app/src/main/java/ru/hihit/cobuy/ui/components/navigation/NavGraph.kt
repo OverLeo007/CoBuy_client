@@ -5,10 +5,13 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import ru.hihit.cobuy.ui.components.screens.AuthScreen
 import ru.hihit.cobuy.ui.components.screens.GroupScreen
 import ru.hihit.cobuy.ui.components.screens.GroupsScreen
 import ru.hihit.cobuy.ui.components.screens.ListScreen
+import ru.hihit.cobuy.ui.components.screens.ScanScreen
 import ru.hihit.cobuy.ui.components.screens.SettingsScreen
+import ru.hihit.cobuy.ui.components.viewmodels.AuthViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
@@ -18,12 +21,12 @@ import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
 @Composable
 fun NavGraph(
     navHostController: NavHostController,
-    vms: HashMap<String, ViewModel>
-
+    vms: HashMap<String, ViewModel>,
+    startDestination: String
 ) {
     NavHost(
         navController = navHostController,
-        startDestination = Route.Groups,
+        startDestination = startDestination,
     ) {
         composable(Route.Groups) {
             GroupsScreen(navHostController = navHostController, vm = vms[Route.Groups] as GroupsViewModel)
@@ -46,5 +49,14 @@ fun NavGraph(
         composable(Route.Settings) {
             SettingsScreen(navHostController = navHostController, vm = vms[Route.Settings] as SettingsViewModel)
         }
+
+        composable(Route.Scanner) {
+            ScanScreen(navHostController = navHostController, vm = vms[Route.Groups] as GroupsViewModel)
+        }
+        
+        composable(Route.Authorization) {
+            AuthScreen(navHostController = navHostController, vm = vms[Route.Authorization] as AuthViewModel)
+        }
+
     }
 }
