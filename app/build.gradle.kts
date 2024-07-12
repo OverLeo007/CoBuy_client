@@ -2,8 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
     id("kotlin-kapt")
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.8.10"
-
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
 }
 
 android {
@@ -54,8 +53,12 @@ android {
 
 val cameraxVersion = "1.0.2"
 dependencies {
+    implementation(libs.gson)
+    implementation(libs.kotlinx.coroutines.test)
+    implementation(libs.kotlinx.coroutines.core)
     // Retrofit
     implementation(libs.retrofit2.kotlinx.serialization.converter)
+//    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.jetbrains.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.retrofit)

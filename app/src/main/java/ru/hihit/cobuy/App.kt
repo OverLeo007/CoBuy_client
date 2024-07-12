@@ -2,6 +2,7 @@ package ru.hihit.cobuy
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -15,7 +16,7 @@ import retrofit2.Retrofit
 class App : Application() {
 
     lateinit var retrofit: Retrofit
-    lateinit var okHttpClient: OkHttpClient
+    private lateinit var okHttpClient: OkHttpClient
 
     override fun onCreate() {
         super.onCreate()
@@ -28,6 +29,7 @@ class App : Application() {
 
         retrofit = Retrofit.Builder()
             .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+//            .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(this.getString(R.string.api_url))
             .client(okHttpClient)
             .build()
@@ -60,6 +62,8 @@ class AuthInterceptor(context: Context) : Interceptor {
     }
 
     private fun getToken(): String {
-        return sharedPreferences.getString("auth_token", "") ?: ""
+        val token = sharedPreferences.getString("auth_token", "") ?: ""
+        Log.d("AuthInterceptor", "Got token: $token")
+        return token
     }
 }

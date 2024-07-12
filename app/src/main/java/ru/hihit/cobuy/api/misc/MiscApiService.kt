@@ -11,4 +11,6 @@ interface MiscApiService {
 
     @GET("api/invite")
     suspend fun acceptInvitation(@Query("token") token: String): Response<InvitationStatusResponse>
+
+
 }

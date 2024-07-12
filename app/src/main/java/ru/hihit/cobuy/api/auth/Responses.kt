@@ -11,9 +11,16 @@ data class RegisterResponse(
 
 @Serializable
 data class LoginResponse(
+    @SerialName(value = "user")
     val data: UserData,
     @SerialName(value = "access_token")
     val token: String,
     @SerialName(value = "token_type")
     val tokenType: String
+)
+
+@Serializable
+data class CheckLoginResponse(
+    @SerialName("data")
+    val userData: UserData
 )

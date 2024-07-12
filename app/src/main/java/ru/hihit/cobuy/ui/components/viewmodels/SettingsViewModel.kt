@@ -6,7 +6,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import ru.hihit.cobuy.App
 import ru.hihit.cobuy.models.User
+import ru.hihit.cobuy.utils.clearPreferences
 
 class SettingsViewModel() : ViewModel() {
 
@@ -26,7 +28,7 @@ class SettingsViewModel() : ViewModel() {
     }
 
     fun onLogout() {
-        Log.d("SettingsViewModel", "onLogout")
+        clearPreferences(App.getContext())
     }
 
 }
