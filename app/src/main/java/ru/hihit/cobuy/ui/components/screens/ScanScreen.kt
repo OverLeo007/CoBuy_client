@@ -12,9 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import ru.hihit.cobuy.R
 import ru.hihit.cobuy.ui.components.composableElems.CameraScanner
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
@@ -35,7 +37,7 @@ fun ScanScreen(
                             .fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Сканировать QR-код")
+                        Text(text = stringResource(R.string.scan_qr_code))
                     }
                 },
                 navHostController = navHostController,
@@ -53,14 +55,14 @@ fun ScanScreen(
                     else
                         Toast.makeText(
                             navHostController.context,
-                            "Неверный QR-код",
+                            navHostController.context.getString(R.string.invalid_qr_code),
                             Toast.LENGTH_SHORT
                         ).show()
                 }
             )
             Spacer(modifier = Modifier.height(50.dp))
             Text(
-                text = "Наведите камеру на QR-код, чтобы присоединиться к группе",
+                text = stringResource(R.string.point_camera_qr),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleLarge,
                 textAlign = TextAlign.Center

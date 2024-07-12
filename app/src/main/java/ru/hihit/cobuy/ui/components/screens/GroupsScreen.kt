@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -112,7 +113,7 @@ fun GroupsScreen(
                     openAddModal.value = false
                 },
                 onDismiss = { openAddModal.value = false },
-                title = "Новая группа"
+                title = stringResource(R.string.new_group)
             )
         }
     }
@@ -126,7 +127,7 @@ fun GroupsScreen(
                             .fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Groups")
+                        Text(text = stringResource(R.string.groups))
                     }
                 },
                 navHostController = navHostController,
@@ -146,7 +147,7 @@ fun GroupsScreen(
                     ) {
                         Icon(
                             painterResource(id = R.drawable.qr_code_scanner_24px),
-                            contentDescription = "Scan QR",
+                            contentDescription = stringResource(R.string.scan_qr),
                         )
                     }
                 }
@@ -202,7 +203,7 @@ fun GroupItem(
 
     val openModal = remember { mutableStateOf(false) }
     val modalButtons = mapOf<String, (Group) -> Unit>(
-        "Удалить" to {
+        stringResource(R.string.delete_word) to {
             onDelete(group)
             openModal.value = false
         }
@@ -290,8 +291,8 @@ fun GroupItem(
 fun AddGroupModal(
     onAdd: (Group) -> Unit = {},
     onDismiss: () -> Unit = {},
-    title: String = "Новая группа",
-    namePlaceholder: String = "Название группы",
+    title: String = stringResource(R.string.new_group),
+    namePlaceholder: String = stringResource(R.string.group_name),
 
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -432,13 +433,13 @@ fun AddGroupModal(
                     Spacer(modifier = Modifier.size(20.dp))
                     if (!isImageCorrect) {
                         Text(
-                            text = "Выберите аватар группы",
+                            text = stringResource(R.string.choose_group_avatar),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
                     if (!isNameCorrect) {
                         Text(
-                            text = "Введите название группы",
+                            text = stringResource(R.string.enter_group_name),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -452,7 +453,7 @@ fun AddGroupModal(
                         if (isNameCorrect && isImageCorrect)
                             onAdd(Group(name = text, avaUrl = imageUri.toString()))
                     }) {
-                        Text(text = "Готово")
+                        Text(text = stringResource(R.string.submit_word))
                     }
                     Spacer(modifier = Modifier.size(16.dp))
                 }

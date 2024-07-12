@@ -58,6 +58,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -192,11 +193,11 @@ fun ProductItem(
         mutableStateOf(false)
     }
     val modalButtons = mapOf<String, (Product) -> Unit>(
-        "Удалить" to {
+        stringResource(id = R.string.delete_word) to {
             onDelete(product)
             openModal.value = false
         },
-        "Редактировать" to {
+        stringResource(R.string.edit_word) to {
             openEditModal.value = true
             openModal.value = false
         },
@@ -295,7 +296,12 @@ fun ProductItem(
                             bottom = 1.dp
                         )
                     ) {
-                        Text(if (isPlanned) "Planned" else "Plan")
+                        Text(
+                            if (isPlanned) stringResource(id = R.string.planned_word)
+                            else stringResource(
+                                id = R.string.plan_word
+                            )
+                        )
                     }
                     Button(
                         onClick = {
@@ -317,7 +323,12 @@ fun ProductItem(
                             bottom = 1.dp
                         )
                     ) {
-                        Text(if (isBought) "Bought" else "Buy")
+                        Text(
+                            if (isBought) stringResource(id = R.string.bought_word)
+                            else stringResource(
+                                id = R.string.buy_word
+                            )
+                        )
                     }
                 }
             }
@@ -392,8 +403,8 @@ fun ListEditableTitle(
 fun AddProductModal(
     onAdd: (Product) -> Unit = {},
     onDismiss: () -> Unit = {},
-    title: String = "Новый продукт",
-    namePlaceholder: String = "Название продукта",
+    title: String = stringResource(R.string.new_product),
+    namePlaceholder: String = stringResource(R.string.product_name),
 ) {
     var isNameCorrect by remember { mutableStateOf(true) }
 
@@ -502,7 +513,7 @@ fun AddProductModal(
                         minLines = 3,
                         placeholder = {
                             Text(
-                                text = "Описание продукта",
+                                text = stringResource(R.string.product_description),
                                 color = MaterialTheme.colorScheme.onTertiary
                             )
                         },
@@ -516,7 +527,7 @@ fun AddProductModal(
                     Spacer(modifier = Modifier.size(20.dp))
                     if (!isNameCorrect) {
                         Text(
-                            text = "Введите название продукта",
+                            text = stringResource(R.string.enter_product_name),
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.size(16.dp))
@@ -526,7 +537,7 @@ fun AddProductModal(
                         if (isNameCorrect)
                             onAdd(Product(name = nameText, description = descriptionText))
                     }) {
-                        Text(text = "Готово")
+                        Text(text = stringResource(id = R.string.submit_word))
                     }
                     Spacer(modifier = Modifier.size(16.dp))
                 }
@@ -542,7 +553,7 @@ fun EditProductModal(
     product: Product,
     onEdit: (Product) -> Unit = {},
     onDismiss: () -> Unit = {},
-    title: String = "Редактирование продукта",
+    title: String = stringResource(R.string.edit_product),
 ) {
     var isNameCorrect by remember { mutableStateOf(true) }
 
@@ -645,7 +656,7 @@ fun EditProductModal(
                         minLines = 3,
                         placeholder = {
                             Text(
-                                text = "Описание продукта",
+                                text = stringResource(id = R.string.product_description),
                                 color = MaterialTheme.colorScheme.onTertiary
                             )
                         },
@@ -659,7 +670,7 @@ fun EditProductModal(
                     Spacer(modifier = Modifier.size(20.dp))
                     if (!isNameCorrect) {
                         Text(
-                            text = "Введите название продукта",
+                            text = stringResource(id = R.string.enter_product_name),
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.size(16.dp))
@@ -669,7 +680,7 @@ fun EditProductModal(
                         if (isNameCorrect)
                             onEdit(product.copy(name = nameText, description = descriptionText))
                     }) {
-                        Text(text = "Готово")
+                        Text(text = stringResource(id = R.string.submit_word))
                     }
                     Spacer(modifier = Modifier.size(16.dp))
                 }

@@ -41,6 +41,7 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -82,7 +83,7 @@ fun SettingsScreen(
                             .fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Settings")
+                        Text(text = stringResource(R.string.settings_word))
                     }
                 },
                 navHostController = navHostController,

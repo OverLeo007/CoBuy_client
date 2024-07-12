@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_create_success">계정이 생성되었습니다. 로그인하세요.</string>
+    <string name="login_success">로그인 성공</string>
+    <string name="authorization_error">인증 오류</string>
+    <string name="login">로그인</string>
+    <string name="email">이메일</string>
+    <string name="password">비밀번호</string>
+    <string name="register_word">등록</string>
+    <string name="login_word">로그인</string>
+    <string name="already_registered_question">이미 등록하셨나요? 로그인</string>
+    <string name="new_group">새 그룹</string>
+    <string name="groups">그룹</string>
+    <string name="scan_qr">QR 코드 스캔</string>
+    <string name="delete_word">삭제</string>
+    <string name="group_name">그룹 이름</string>
+    <string name="choose_group_avatar">그룹 아바타 선택</string>
+    <string name="enter_group_name">그룹 이름 입력</string>
+    <string name="submit_word">제출</string>
+    <string name="editing_word">편집 중</string>
+    <string name="participants_word">참여자</string>
+    <string name="confirm_user_removal">%1$s 사용자를 그룹 %2$s에서 삭제하시겠습니까?</string>
+    <string name="cancel_word">취소</string>
+    <string name="new_list_word">새 목록</string>
+    <string name="list_name_word">목록 이름</string>
+    <string name="enter_list_name_word">목록 이름 입력</string>
+    <string name="invite_to_group_word">%1$s 초대하기</string>
+    <string name="edit_word">편집</string>
+    <string name="planned_word">계획</string>
+    <string name="bought_word">구매됨</string>
+    <string name="plan_word">계획</string>
+    <string name="buy_word">구매</string>
+    <string name="new_product">새 제품</string>
+    <string name="product_name">제품 이름</string>
+    <string name="product_description">제품 설명</string>
+    <string name="enter_product_name">제품 이름 입력</string>
+    <string name="edit_product">제품 편집</string>
+    <string name="scan_qr_code">QR 코드 스캔</string>
+    <string name="invalid_qr_code">잘못된 QR 코드</string>
+    <string name="point_camera_qr">카메라를 QR 코드에 맞추세요</string>
+    <string name="settings_word">설정</string>
+</resources>

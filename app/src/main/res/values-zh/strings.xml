@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_create_success">账号创建成功，请登录</string>
+    <string name="login_success">登录成功</string>
+    <string name="authorization_error">授权错误</string>
+    <string name="login">登录</string>
+    <string name="email">邮箱</string>
+    <string name="password">密码</string>
+    <string name="register_word">注册</string>
+    <string name="login_word">登录</string>
+    <string name="already_registered_question">已注册？登录</string>
+    <string name="new_group">新建群组</string>
+    <string name="groups">群组</string>
+    <string name="scan_qr">扫描二维码</string>
+    <string name="delete_word">删除</string>
+    <string name="group_name">群组名称</string>
+    <string name="choose_group_avatar">选择群组头像</string>
+    <string name="enter_group_name">输入群组名称</string>
+    <string name="submit_word">提交</string>
+    <string name="editing_word">编辑中</string>
+    <string name="participants_word">参与者</string>
+    <string name="confirm_user_removal">您确定要从群组 %2$s 中移除用户 %1$s 吗？</string>
+    <string name="cancel_word">取消</string>
+    <string name="new_list_word">新建清单</string>
+    <string name="list_name_word">清单名称</string>
+    <string name="enter_list_name_word">输入清单名称</string>
+    <string name="invite_to_group_word">邀请加入 %1$s</string>
+    <string name="edit_word">编辑</string>
+    <string name="planned_word">计划中</string>
+    <string name="bought_word">已购买</string>
+    <string name="plan_word">计划</string>
+    <string name="buy_word">购买</string>
+    <string name="new_product">新建产品</string>
+    <string name="product_name">产品名称</string>
+    <string name="product_description">产品描述</string>
+    <string name="enter_product_name">输入产品名称</string>
+    <string name="edit_product">编辑产品</string>
+    <string name="scan_qr_code">扫描二维码</string>
+    <string name="invalid_qr_code">无效二维码</string>
+    <string name="point_camera_qr">请将摄像头对准二维码以加入群组</string>
+    <string name="settings_word">设置</string>
+</resources>

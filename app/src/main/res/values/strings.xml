@@ -1,4 +1,43 @@
 <resources>
-    <string name="app_name">CoBuy</string>
-    <string name="api_url">http://cobuy.sytes.net/</string>
+    <string name="app_name" translatable="false">CoBuy</string>
+    <string name="api_url" translatable="false">http://cobuy.sytes.net/</string>
+    <string name="account_create_success">Account created, please log in</string>
+    <string name="login_success">Successful login</string>
+    <string name="authorization_error">Authorization error</string>
+    <string name="login">Login</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="register_word">Register</string>
+    <string name="login_word">Log In</string>
+    <string name="already_registered_question">Already registered? Log In</string>
+    <string name="new_group">New Group</string>
+    <string name="groups">Groups</string>
+    <string name="scan_qr">Scan QR</string>
+    <string name="delete_word">Delete</string>
+    <string name="group_name">Group Name</string>
+    <string name="choose_group_avatar">Choose group avatar</string>
+    <string name="enter_group_name">Enter group name</string>
+    <string name="submit_word">Submit</string>
+    <string name="editing_word">Editing</string>
+    <string name="participants_word">Participants</string>
+    <string name="confirm_user_removal">Are you sure you want to remove the user %1$s from the group %2$s?</string>
+    <string name="cancel_word">Cancel</string>
+    <string name="new_list_word">New List</string>
+    <string name="list_name_word">List Name</string>
+    <string name="enter_list_name_word">Enter the list name</string>
+    <string name="invite_to_group_word">Invite to %1$s</string>
+    <string name="edit_word">Edit</string>
+    <string name="planned_word">Planned</string>
+    <string name="bought_word">Bought</string>
+    <string name="plan_word">Plan</string>
+    <string name="buy_word">Buy</string>
+    <string name="new_product">New Product</string>
+    <string name="product_name">Product Name</string>
+    <string name="product_description">Product Description</string>
+    <string name="enter_product_name">Enter product name</string>
+    <string name="edit_product">Edit Product</string>
+    <string name="scan_qr_code">Scan QR Code</string>
+    <string name="invalid_qr_code">Invalid QR Code</string>
+    <string name="point_camera_qr">Point the camera at the QR code to join the group</string>
+    <string name="settings_word">Settings</string>
 </resources>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_create_success">Аккаунт создан, нужно войти</string>
+    <string name="login_success">Успешный вход</string>
+    <string name="authorization_error">Ошибка авторизации</string>
+    <string name="login">Логин</string>
+    <string name="email">Почта</string>
+    <string name="password">Password</string>
+    <string name="register_word">Зарегистрироваться</string>
+    <string name="login_word">Войти</string>
+    <string name="already_registered_question">Уже зарегистрированы? Войти</string>
+    <string name="new_group">Новая группа</string>
+    <string name="groups">Группы</string>
+    <string name="scan_qr">Сканировать QR</string>
+    <string name="delete_word">Удалить</string>
+    <string name="group_name">Название группы</string>
+    <string name="choose_group_avatar">Выберите аватар группы</string>
+    <string name="enter_group_name">Введите название группы</string>
+    <string name="submit_word">Готово</string>
+    <string name="editing_word">Редактирование</string>
+    <string name="participants_word">Участники</string>
+    <string name="confirm_user_removal">Вы уверены, что хотите удалить пользователя %1$s из группы %2$s?</string>
+    <string name="cancel_word">Отмена</string>
+    <string name="new_list_word">Новый список</string>
+    <string name="list_name_word">Название списка</string>
+    <string name="enter_list_name_word">Введите название списка</string>
+    <string name="invite_to_group_word">Пригласить в %1$s</string>
+    <string name="edit_word">Редактировать</string>
+    <string name="planned_word">Запланировано</string>
+    <string name="bought_word">Куплено</string>
+    <string name="plan_word">Запланировать</string>
+    <string name="buy_word">Купить</string>
+    <string name="new_product">Новый продукт</string>
+    <string name="product_name">Название продукта</string>
+    <string name="product_description">Описание продукта</string>
+    <string name="enter_product_name">Введите название продукта</string>
+    <string name="edit_product">Редактирование продукта</string>
+    <string name="scan_qr_code">Сканировать QR-код</string>
+    <string name="invalid_qr_code">Неверный QR-код</string>
+    <string name="point_camera_qr">Наведите камеру на QR-код, чтобы присоединиться к группе</string>
+    <string name="settings_word">Настройки</string>
+</resources>

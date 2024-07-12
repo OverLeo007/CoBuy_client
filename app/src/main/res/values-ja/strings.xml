@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account_create_success">アカウントが作成されました。ログインしてください。</string>
+    <string name="login_success">ログインに成功しました。</string>
+    <string name="authorization_error">認証エラー</string>
+    <string name="login">ログイン</string>
+    <string name="email">メールアドレス</string>
+    <string name="password">パスワード</string>
+    <string name="register_word">登録する</string>
+    <string name="login_word">ログイン</string>
+    <string name="already_registered_question">すでに登録済みですか？ ログインする</string>
+    <string name="new_group">新しいグループ</string>
+    <string name="groups">グループ</string>
+    <string name="scan_qr">QRコードをスキャン</string>
+    <string name="delete_word">削除</string>
+    <string name="group_name">グループ名</string>
+    <string name="choose_group_avatar">グループのアバターを選択</string>
+    <string name="enter_group_name">グループ名を入力</string>
+    <string name="submit_word">送信</string>
+    <string name="editing_word">編集中</string>
+    <string name="participants_word">参加者</string>
+    <string name="confirm_user_removal">%1$s をグループ %2$s から削除しますか？</string>
+    <string name="cancel_word">キャンセル</string>
+    <string name="new_list_word">新しいリスト</string>
+    <string name="list_name_word">リスト名</string>
+    <string name="enter_list_name_word">リスト名を入力</string>
+    <string name="invite_to_group_word">%1$s に招待する</string>
+    <string name="edit_word">編集</string>
+    <string name="planned_word">計画中</string>
+    <string name="bought_word">購入済み</string>
+    <string name="plan_word">計画</string>
+    <string name="buy_word">購入</string>
+    <string name="new_product">新しい製品</string>
+    <string name="product_name">製品名</string>
+    <string name="product_description">製品の説明</string>
+    <string name="enter_product_name">製品名を入力</string>
+    <string name="edit_product">製品を編集</string>
+    <string name="scan_qr_code">QRコードをスキャン</string>
+    <string name="invalid_qr_code">無効なQRコード</string>
+    <string name="point_camera_qr">カメラをQRコードに向けてください</string>
+    <string name="settings_word">設定</string>
+</resources>

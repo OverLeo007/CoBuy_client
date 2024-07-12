@@ -58,6 +58,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -284,7 +285,7 @@ fun EditModal(
                 onUserRemoved(it)
             },
             group = group,
-            user = userToDelete
+            user = userToDelete!!
         )
     }
 
@@ -321,7 +322,7 @@ fun EditModal(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Редактирование",
+                                    text = stringResource(R.string.editing_word),
                                     color = MaterialTheme.colorScheme.onTertiary
                                 )
                             }
@@ -436,7 +437,7 @@ fun EditModal(
                             modifier = Modifier.padding(PaddingValues(start = 12.dp, end = 8.dp))
                         ) {
                             Text(
-                                text = "Участники",
+                                text = stringResource(R.string.participants_word),
                                 color = MaterialTheme.colorScheme.onTertiary
                             )
                             IconButton(onClick = { openInviteModal.value = true }) {
@@ -559,7 +560,7 @@ fun AddUserModal(
                     ) {
                         Image(bitmap = qrCodeBitmap, contentDescription = "QR code")
                         Text(
-                            text = "Пригласить в ${group.name}",
+                            text = stringResource(R.string.invite_to_group_word, group.name),
                             color = MaterialTheme.colorScheme.onTertiary,
                             style = MaterialTheme.typography.titleLarge
                         )
@@ -596,7 +597,7 @@ fun RemoveUserModal(
     onDismissRequest: () -> Unit = {},
     onConfirmRequest: (User) -> Unit = {},
     group: Group = Group.default(),
-    user: User? = User.default()
+    user: User = User.default()
 ) {
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
@@ -610,7 +611,7 @@ fun RemoveUserModal(
         ) {
             Text(
                 modifier = Modifier.padding(16.dp),
-                text = "Вы уверены, что хотите удалить пользователя ${user?.name} из группы ${group.name}?",
+                text = stringResource(R.string.confirm_user_removal, user.name, group.name),
                 color = MaterialTheme.colorScheme.onTertiary,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 4,
@@ -628,17 +629,17 @@ fun RemoveUserModal(
 
                 ) {
                     Text(
-                        text = "Отмена",
+                        text = stringResource(R.string.cancel_word),
                         color = MaterialTheme.colorScheme.onTertiary
                     )
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 TextButton(
-                    onClick = { user?.let { onConfirmRequest(it) } },
+                    onClick = { onConfirmRequest(user) },
                     modifier = Modifier.weight(1F)
                 ) {
                     Text(
-                        text = "Удалить",
+                        text = stringResource(R.string.delete_word),
                         color = MaterialTheme.colorScheme.onTertiary
                     )
                 }
@@ -654,8 +655,8 @@ fun RemoveUserModal(
 fun AddListModal(
     onAdd: (ProductList) -> Unit = {},
     onDismiss: () -> Unit = {},
-    title: String = "Новый список",
-    namePlaceholder: String = "Название списка",
+    title: String = stringResource(R.string.new_list_word),
+    namePlaceholder: String = stringResource(R.string.list_name_word),
     ) {
     var isNameCorrect by remember { mutableStateOf(true) }
 
@@ -747,7 +748,7 @@ fun AddListModal(
                     Spacer(modifier = Modifier.size(20.dp))
                     if (!isNameCorrect) {
                         Text(
-                            text = "Введите название списка",
+                            text = stringResource(R.string.enter_list_name_word),
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.size(16.dp))
@@ -757,7 +758,7 @@ fun AddListModal(
                         if (isNameCorrect)
                             onAdd(ProductList(name = text))
                     }) {
-                        Text(text = "Готово")
+                        Text(text = stringResource(id = R.string.submit_word))
                     }
                     Spacer(modifier = Modifier.size(16.dp))
                 }

@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -54,16 +55,29 @@ fun AuthScreen(
         if (vm.apiResponse == "OK") {
             if (isRegistering) {
                 isRegistering = false
-                Toast.makeText(context, "Аккаунт создан, нужно войти", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.account_create_success),
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 navHostController.navigate(Route.Groups)
-                Toast.makeText(context, "Успешный вход", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    context.getString(R.string.login_success),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         } else if (vm.apiResponse == "FAIL") {
-            Toast.makeText(context, "Ошибка авторизации", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                context.getString(R.string.authorization_error),
+                Toast.LENGTH_SHORT
+            ).show()
         }
         vm.apiResponse = ""
     }
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -77,7 +91,12 @@ fun AuthScreen(
                 OutlinedTextField(
                     value = login,
                     onValueChange = { login = it },
-                    label = { Text("Логин", color = MaterialTheme.colorScheme.onSurface) }
+                    label = {
+                        Text(
+                            stringResource(R.string.login),
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 if (vm.loginError != "") {
@@ -89,7 +108,11 @@ fun AuthScreen(
                 value = email,
                 onValueChange = { email = it },
                 singleLine = true,
-                label = { Text("Почта", color = MaterialTheme.colorScheme.onSurface) }
+                label = {
+                    Text(
+                        stringResource(R.string.email), color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             )
             Spacer(modifier = Modifier.height(8.dp))
             if (vm.emailError != "") {
@@ -98,10 +121,15 @@ fun AuthScreen(
             }
             OutlinedTextField(
                 value = password,
-                visualTransformation =  if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 onValueChange = { password = it },
-                label = { Text("Пароль", color = MaterialTheme.colorScheme.onSurface) },
+                label = {
+                    Text(
+                        stringResource(R.string.password),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
                 trailingIcon = {
                     val image = if (passwordVisible)
                         painterResource(id = R.drawable.visibility_off_24px)
@@ -109,7 +137,7 @@ fun AuthScreen(
 
                     val description = if (passwordVisible) "Hide password" else "Show password"
 
-                    IconButton(onClick = {passwordVisible = !passwordVisible}){
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(image, description)
                     }
                 }
@@ -117,7 +145,11 @@ fun AuthScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
             if (vm.passwordError != "") {
-                Text(vm.passwordError, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center)
+                Text(
+                    vm.passwordError,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center
+                )
                 Spacer(modifier = Modifier.height(8.dp))
             }
             Button(onClick = {
@@ -134,7 +166,10 @@ fun AuthScreen(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 } else {
-                    Text(if (isRegistering) "Зарегистрироваться" else "Войти")
+                    Text(
+                        if (isRegistering) stringResource(R.string.register_word)
+                        else stringResource(R.string.login_word)
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -145,7 +180,10 @@ fun AuthScreen(
                 password = ""
                 login = ""
             }) {
-                Text(if (isRegistering) "Уже зарегистрированы? Войти" else "Зарегистрироваться")
+                Text(
+                    if (isRegistering) stringResource(R.string.already_registered_question)
+                    else stringResource(R.string.register_word)
+                )
             }
         }
     }
