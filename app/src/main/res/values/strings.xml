@@ -40,4 +40,6 @@
     <string name="invalid_qr_code">Invalid QR Code</string>
     <string name="point_camera_qr">Point the camera at the QR code to join the group</string>
     <string name="settings_word">Settings</string>
+    <string name="trying_to_auth">Trying to authenticate…</string>
+    <string name="invalid_token">Invalid invitation token</string>
 </resources>

@@ -53,6 +53,11 @@ android {
 
 val cameraxVersion = "1.0.2"
 dependencies {
+    // https://mvnrepository.com/artifact/androidx.lifecycle/lifecycle-viewmodel-compose
+    implementation("androidx.compose.runtime:runtime:1.6.8")
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
+    implementation("androidx.compose.runtime:runtime-rxjava2:1.6.8")
+
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.test)
     implementation(libs.kotlinx.coroutines.core)

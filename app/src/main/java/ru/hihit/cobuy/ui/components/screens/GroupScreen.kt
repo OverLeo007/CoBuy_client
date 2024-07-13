@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -91,6 +92,9 @@ fun GroupScreen(
 ) {
     val context = LocalContext.current
 
+    var isGroupLoading by remember { mutableStateOf(vm.isGroupLoading) }
+    var isListsLoading by remember { mutableStateOf(vm.isListsLoading) }
+
     var isRefreshing by remember { mutableStateOf(false) }
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
@@ -135,64 +139,87 @@ fun GroupScreen(
         Column {
             TopAppBarImpl(
                 title = {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable {
-                                Toast
-                                    .makeText(context, "Open group edit", Toast.LENGTH_SHORT)
-                                    .show()
-                                openEditModal.value = true
-                            },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(
+                    if (isGroupLoading.value) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center
+                                .fillMaxSize(),
+                            contentAlignment = Alignment.Center
                         ) {
-                            AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(vm.groupIconUrl)
-                                    .crossfade(true)
-                                    .build(),
-                                contentDescription = "Group ${vm.groupId} Avatar",
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape),
-                                placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
+                            CircularProgressIndicator(
+                                color = MaterialTheme.colorScheme.onSurface
                             )
-                            Spacer(modifier = Modifier.size(8.dp))
-                            Text(text = "Group ${vm.groupId}")
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    Toast
+                                        .makeText(context, "Open group edit", Toast.LENGTH_SHORT)
+                                        .show()
+                                    openEditModal.value = true
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(vm.groupIconUrl)
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = "Group ${vm.groupId} Avatar",
+                                    contentScale = ContentScale.Fit,
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(CircleShape),
+                                    placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
+                                )
+                                Spacer(modifier = Modifier.size(8.dp))
+                                Text(text = "Group ${vm.groupId}")
+                            }
                         }
                     }
                 },
                 navHostController = navHostController,
             )
-
-            SwipeRefreshImpl(
-                swipeState = swipeRefreshState,
-                onRefresh = {
-                    Toast.makeText(context, "Обновляем списки", Toast.LENGTH_SHORT).show()
-                    isRefreshing = true
-                }) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
+            if (isListsLoading.value) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    item {
-                        ListItem(listName = "Выполненный список покупок", fillPercents = 1F)
-                    }
-                    items(56) {
-                        ListItem(
-                            listName = "Список покупок $it",
-                            fillPercents = Random.nextFloat(),
-                            onClick = {
-                                Toast.makeText(context, "Open list $it", Toast.LENGTH_SHORT).show()
-                                navHostController.navigate(Route.List + "/${it}")
-                            }
-                        )
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            } else {
+                SwipeRefreshImpl(
+                    swipeState = swipeRefreshState,
+                    onRefresh = {
+                        Toast.makeText(context, "Обновляем списки", Toast.LENGTH_SHORT).show()
+                        isRefreshing = true
+                    }) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        item {
+                            ListItem(listName = "Выполненный список покупок", fillPercents = 1F)
+                        }
+                        items(56) {
+                            ListItem(
+                                listName = "Список покупок $it",
+                                fillPercents = Random.nextFloat(),
+                                onClick = {
+                                    Toast.makeText(context, "Open list $it", Toast.LENGTH_SHORT).show()
+                                    navHostController.navigate(Route.List + "/${it}")
+                                }
+                            )
+                        }
                     }
                 }
             }

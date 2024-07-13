@@ -39,4 +39,7 @@
     <string name="invalid_qr_code">Неверный QR-код</string>
     <string name="point_camera_qr">Наведите камеру на QR-код, чтобы присоединиться к группе</string>
     <string name="settings_word">Настройки</string>
+    <string name="trying_to_auth">Пытаемся авторизоваться…</string>
+    <string name="invalid_token">Некорректный токен приглашения</string>
+
 </resources>

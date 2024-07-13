@@ -20,7 +20,6 @@ import ru.hihit.cobuy.ui.theme.CoBuyTheme
 import ru.hihit.cobuy.utils.getFromPreferences
 
 
-
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,41 +30,50 @@ class MainActivity : ComponentActivity() {
         }
         super.onCreate(savedInstanceState)
         var startDestination: String = Route.Authorization
-        AuthRequester.checkLogin(
-            callback = { response ->
-                if (response != null) {
-                    if (getFromPreferences(
-                            App.getContext(),
-                            "user_id",
-                            -1
-                        ) == response.userData.id
-                        && getFromPreferences(
-                            App.getContext(),
-                            "user_name",
-                            ""
-                        ) == response.userData.name
-                        && getFromPreferences(
-                            App.getContext(),
-                            "user_email",
-                            ""
-                        ) == response.userData.email
-                    ) startDestination = Route.Groups
-                }
-                setContent {
-                    CoBuyTheme {
-                        MainScreen(startDestination)
-                    }
-                }
-            },
-            onError = { code, body ->
-                startDestination = Route.Authorization
-                setContent {
-                    CoBuyTheme {
-                        MainScreen(startDestination)
-                    }
+        if (getFromPreferences(App.getContext(), "auth_token", "") == "") {
+            setContent {
+                CoBuyTheme {
+                    MainScreen(startDestination)
                 }
             }
-        )
+        } else {
+
+            AuthRequester.checkLogin(
+                callback = { response ->
+                    if (response != null) {
+                        if (getFromPreferences(
+                                App.getContext(),
+                                "user_id",
+                                -1
+                            ) == response.userData.id
+                            && getFromPreferences(
+                                App.getContext(),
+                                "user_name",
+                                ""
+                            ) == response.userData.name
+                            && getFromPreferences(
+                                App.getContext(),
+                                "user_email",
+                                ""
+                            ) == response.userData.email
+                        ) startDestination = Route.Groups
+                    }
+                    setContent {
+                        CoBuyTheme {
+                            MainScreen(startDestination)
+                        }
+                    }
+                },
+                onError = { _, _ ->
+                    startDestination = Route.Authorization
+                    setContent {
+                        CoBuyTheme {
+                            MainScreen(startDestination)
+                        }
+                    }
+                }
+            )
+        }
     }
 }
 

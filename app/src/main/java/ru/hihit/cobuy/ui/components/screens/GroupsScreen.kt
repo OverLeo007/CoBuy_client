@@ -2,7 +2,7 @@ package ru.hihit.cobuy.ui.components.screens
 
 import android.Manifest
 import android.net.Uri
-import android.widget.Toast
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,8 +44,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,16 +75,17 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kotlinx.coroutines.delay
 import ru.hihit.cobuy.R
+import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.models.Group
 import ru.hihit.cobuy.ui.components.composableElems.AddButton
+import ru.hihit.cobuy.ui.components.composableElems.AvatarPlaceholder
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.composableElems.UniversalModal
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
-import kotlin.random.Random
+
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -91,18 +96,19 @@ fun GroupsScreen(
     val context = LocalContext.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
 
-    var isRefreshing by remember { mutableStateOf(false) }
+    val isRefreshing by vm.isLoading.observeAsState(false)
+
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
-    LaunchedEffect(isRefreshing) {
-        if (isRefreshing) {
-            delay(Toast.LENGTH_SHORT.toLong())
-            isRefreshing = false
-        }
+    val groups by vm.groups.collectAsState()
+    Log.d("GroupsScreen", groups.toString())
+
+
+
+    val openAddModal = remember { vm.openAddModal }
+    val isAddingGroup = remember {
+        vm.isAddingGroup
     }
-
-
-    val openAddModal = remember { mutableStateOf(false) }
 
     when {
         openAddModal.value -> {
@@ -110,10 +116,11 @@ fun GroupsScreen(
                 onAdd = {
                     vm.addGroup(it)
 
-                    openAddModal.value = false
+//                    openAddModal.value = false
                 },
                 onDismiss = { openAddModal.value = false },
-                title = stringResource(R.string.new_group)
+                title = stringResource(R.string.new_group),
+                isGroupAdding = isAddingGroup
             )
         }
     }
@@ -156,30 +163,23 @@ fun GroupsScreen(
             SwipeRefreshImpl(
                 swipeState = swipeRefreshState,
                 onRefresh = {
-                    Toast.makeText(context, "Обновляем группы", Toast.LENGTH_SHORT).show()
-                    isRefreshing = true
+                    vm.onRefresh()
                 }
             ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth(),
 //                    contentPadding = PaddingValues(16.dp)
                 ) {
-                    items(5) {
+                    items(groups) { group ->
                         GroupItem(
-                            group = Group(
-                                name = "Прогеры №$it",
-                                membersCount = Random.nextInt(1, 10),
-                                listsCount = Random.nextInt(1, 10),
-                                avaUrl = "https://sun125-1.userapi.com/s/v1/ig2/AIxZdnOPgs7aVJZn24luWz84Fg1aa2iyzU6GbG-qp1065HTamsIBsBnINypL_PRcXVNEKZP6yZc_9oWq5UciHnW-.jpg?size=50x0&quality=96&crop=0,0,984,984&ava=1",
-                            ),
+                            group = group,
                             onClick = {
-                                navHostController.navigate(Route.Group + "/${it}")
+                                navHostController.navigate(Route.Group + "/${group.id}")
                             },
-                            onDelete = {group ->
+                            onDelete = {
                                 vm.deleteGroup(group)
                             }
                         )
-
                     }
                 }
             }
@@ -196,13 +196,13 @@ fun GroupsScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GroupItem(
-    group: Group,
+    group: GroupData,
     onClick: () -> Unit = {},
-    onDelete: (Group) -> Unit = {}
+    onDelete: (GroupData) -> Unit = {},
 ) {
 
     val openModal = remember { mutableStateOf(false) }
-    val modalButtons = mapOf<String, (Group) -> Unit>(
+    val modalButtons = mapOf<String, (GroupData) -> Unit>(
         stringResource(R.string.delete_word) to {
             onDelete(group)
             openModal.value = false
@@ -229,18 +229,27 @@ fun GroupItem(
                 .padding(top = 8.dp, bottom = 8.dp, start = 16.dp, end = 16.dp)
                 .fillMaxWidth()
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(group.avaUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Group ${group.name} Avatar",
-                contentScale = ContentScale.Fit,
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape),
-                placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
-            )
+            if (group.avaUrl == null) {
+                AvatarPlaceholder(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    name = group.name
+                )
+            } else {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(group.avaUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = "Group ${group.name} Avatar",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column(
                 modifier = Modifier.height(48.dp),
@@ -293,11 +302,10 @@ fun AddGroupModal(
     onDismiss: () -> Unit = {},
     title: String = stringResource(R.string.new_group),
     namePlaceholder: String = stringResource(R.string.group_name),
-
+    isGroupAdding: MutableState<Boolean> = mutableStateOf(false)
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var isNameCorrect by remember { mutableStateOf(true) }
-    var isImageCorrect by remember { mutableStateOf(true) }
 
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var text by remember { mutableStateOf("") }
@@ -306,7 +314,6 @@ fun AddGroupModal(
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let {
                 imageUri = it
-                isImageCorrect = true
             }
         }
 
@@ -431,29 +438,29 @@ fun AddGroupModal(
                     }
                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
                     Spacer(modifier = Modifier.size(20.dp))
-                    if (!isImageCorrect) {
-                        Text(
-                            text = stringResource(R.string.choose_group_avatar),
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
                     if (!isNameCorrect) {
                         Text(
                             text = stringResource(R.string.enter_group_name),
                             color = MaterialTheme.colorScheme.error
                         )
-                    }
-                    if (!isNameCorrect || !isImageCorrect) {
                         Spacer(modifier = Modifier.size(16.dp))
-                    }
 
+                    }
                     Button(onClick = {
                         isNameCorrect = text.isNotEmpty()
-                        isImageCorrect = imageUri != null
-                        if (isNameCorrect && isImageCorrect)
+                        if (isNameCorrect)
                             onAdd(Group(name = text, avaUrl = imageUri.toString()))
-                    }) {
-                        Text(text = stringResource(R.string.submit_word))
+                    },
+                      enabled = !isGroupAdding.value
+                    ) {
+                        if (isGroupAdding.value) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        } else {
+                            Text(text = stringResource(R.string.submit_word))
+                        }
                     }
                     Spacer(modifier = Modifier.size(16.dp))
                 }

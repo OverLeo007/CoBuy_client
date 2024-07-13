@@ -44,23 +44,25 @@ fun ScanScreen(
                 isBackArrow = true,
                 isSettings = false
             )
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(20.dp))
             CameraScanner(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(500.dp),
                 onScanned = {
-                    if (vm.joinGroup(it))
-                        navHostController.navigateUp()
-                    else
-                        Toast.makeText(
-                            navHostController.context,
-                            navHostController.context.getString(R.string.invalid_qr_code),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    vm.joinGroup(it, navHostController)
+
                 }
             )
-            Spacer(modifier = Modifier.height(50.dp))
+            Spacer(modifier = Modifier.height(25.dp))
+            if (vm.scanError != "") {
+                Text(
+                    text = vm.scanError,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center)
+            }
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = stringResource(R.string.point_camera_qr),
                 color = MaterialTheme.colorScheme.onSurface,

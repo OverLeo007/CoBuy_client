@@ -84,3 +84,20 @@ fun removeManyPreferences(context: Context, vararg keys: String) {
         removeFromPreferences(context, key)
     }
 }
+
+
+fun isJwt(token: String): Boolean {
+    val parts = token.split(".")
+    if (parts.size != 3) {
+        return false
+    }
+
+    val base64UrlRegex = "^[A-Za-z0-9_-]*$".toRegex()
+    for (part in parts) {
+        if (!base64UrlRegex.matches(part)) {
+            return false
+        }
+    }
+
+    return true
+}
