@@ -25,7 +25,7 @@
     <string name="new_list_word">New List</string>
     <string name="list_name_word">List Name</string>
     <string name="enter_list_name_word">Enter the list name</string>
-    <string name="invite_to_group_word">Invite to %1$s</string>
+    <string name="invite_to_group_word">Scan for invite to %1$s</string>
     <string name="edit_word">Edit</string>
     <string name="planned_word">Planned</string>
     <string name="bought_word">Bought</string>
@@ -42,4 +42,5 @@
     <string name="settings_word">Settings</string>
     <string name="trying_to_auth">Trying to authenticate…</string>
     <string name="invalid_token">Invalid invitation token</string>
+    <string name="share_qr_text">Scan this QR code in your CoBuy app to join %1$s group!</string>
 </resources>

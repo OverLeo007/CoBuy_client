@@ -6,14 +6,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GroupData(
     val id: Int,
-    val name: String,
-    val avaUrl: String?,
-    val inviteLink: String?,
+    var name: String,
+    var avaUrl: String?,
+    var inviteLink: String?,
     @SerialName(value = "owner")
     val ownerId: Int,
-    val membersCount: Int,
-    val listsCount: Int,
-    val members: List<UserData>
+    var membersCount: Int,
+    var listsCount: Int,
+    var members: List<UserData>
 )
 
 @Serializable
@@ -27,8 +27,9 @@ data class UserData(
 data class ListData(
     val id: Int,
     val name: String,
-    @SerialName(value = "group_id")
     val groupId: Int,
+    val productsCount: Int,
+    val checkedProductsCount: Int
 )
 
 @Serializable

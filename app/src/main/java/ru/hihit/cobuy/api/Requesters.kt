@@ -90,7 +90,7 @@ object GroupRequester {
 
     fun updateGroup(
         id: Int,
-        request: GetUpdateGroupResponse,
+        request: CreateUpdateGroupRequest,
         callback: (GetUpdateGroupResponse?) -> Unit,
         onError: (Int, ResponseBody?) -> Unit
     ) {

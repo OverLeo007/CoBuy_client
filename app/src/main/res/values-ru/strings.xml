@@ -24,7 +24,7 @@
     <string name="new_list_word">Новый список</string>
     <string name="list_name_word">Название списка</string>
     <string name="enter_list_name_word">Введите название списка</string>
-    <string name="invite_to_group_word">Пригласить в %1$s</string>
+    <string name="invite_to_group_word">Отсканируйте чтобы пригласить в %1$s</string>
     <string name="edit_word">Редактировать</string>
     <string name="planned_word">Запланировано</string>
     <string name="bought_word">Куплено</string>
@@ -41,5 +41,6 @@
     <string name="settings_word">Настройки</string>
     <string name="trying_to_auth">Пытаемся авторизоваться…</string>
     <string name="invalid_token">Некорректный токен приглашения</string>
+    <string name="share_qr_text">Сканируйте этот QR-код в приложении CoBuy, чтобы присоединиться к группе %1$s!</string>
 
 </resources>

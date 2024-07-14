@@ -28,7 +28,6 @@ fun MainScreen(
     val vms: HashMap<String, ViewModel> = HashMap()
 //    TODO: Добавить фабрики
     vms[Route.Groups] = viewModel(key = Route.Groups) { GroupsViewModel() }
-    vms[Route.Group] = viewModel(key = Route.Group) { GroupViewModel() }
     vms[Route.List] = viewModel(key = Route.List) { ListViewModel() }
     vms[Route.Settings] = viewModel(key = Route.Settings) { SettingsViewModel() }
     vms[Route.Authorization] = viewModel(key = Route.Authorization) { AuthViewModel() }

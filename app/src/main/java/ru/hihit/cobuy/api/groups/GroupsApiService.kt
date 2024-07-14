@@ -19,7 +19,7 @@ interface GroupsApiService {
     suspend fun getGroupById(@Path("id") id: Int): Response<GetUpdateGroupResponse>
 
     @PUT("api/group/{id}")
-    suspend fun updateGroup(@Path("id") id: Int, @Body request: GetUpdateGroupResponse): Response<GetUpdateGroupResponse>
+    suspend fun updateGroup(@Path("id") id: Int, @Body request: CreateUpdateGroupRequest): Response<GetUpdateGroupResponse>
 
     @DELETE("api/group/{id}")
     suspend fun deleteGroup(@Path("id") id: Int): Response<Unit>

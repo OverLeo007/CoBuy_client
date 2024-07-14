@@ -3,6 +3,7 @@ package ru.hihit.cobuy.utils
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.net.Uri
 import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -100,4 +101,9 @@ fun isJwt(token: String): Boolean {
     }
 
     return true
+}
+
+
+fun String?.toUri(): Uri? {
+    return this?.let { Uri.parse(it) }
 }

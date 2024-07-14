@@ -5,31 +5,39 @@ import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.RectF
-import android.graphics.Shader
-import androidx.compose.ui.graphics.ImageBitmap
+import android.graphics.Insets
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
+import android.graphics.RectF
+import android.graphics.Shader
+import android.util.Size
+import android.view.WindowInsets
+import android.view.WindowManager
+import android.view.WindowMetrics
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.core.graphics.drawable.toBitmap
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.WriterException
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import kotlin.math.roundToInt
+
 
 @Throws(WriterException::class)
 fun createQRCodeBitmap(
     context: Context,
     text: String,
-    width: Int = 500,
-    height: Int = 500,
-    logoRes: Int
+    logoRes: Int,
 ): ImageBitmap {
+    val displayMetrics = context.resources.displayMetrics
+    val width = (displayMetrics.widthPixels  * 0.8f).roundToInt()
+    val height = width
     val hints = HashMap<EncodeHintType, ErrorCorrectionLevel>()
     hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
 
@@ -54,7 +62,7 @@ fun createQRCodeBitmap(
         val logoWidth = logo.width
         val logoHeight = logo.height
         val scaleFactor =
-            (width * 1.0f / 5f / logoWidth).coerceAtMost(height * 1.0f / 5f / logoHeight)
+            (width * 0.8f / 5f / logoWidth).coerceAtMost(height * 0.8f / 5f / logoHeight)
 
         val output = Bitmap.createBitmap(logo.width, logo.height, Bitmap.Config.ARGB_8888)
         var canvas = Canvas(output)

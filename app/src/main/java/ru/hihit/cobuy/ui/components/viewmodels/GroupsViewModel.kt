@@ -121,6 +121,10 @@ class GroupsViewModel : ViewModel() {
                         val error = it["error"] as String
                         scanError = error
                     }
+                    if (it.containsKey("message")) {
+                        val error = it["message"] as String
+                        scanError = error
+                    }
                 }
             }
         )

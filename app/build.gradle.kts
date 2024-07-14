@@ -58,6 +58,8 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
     implementation("androidx.compose.runtime:runtime-rxjava2:1.6.8")
 
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.34.0")
+
     implementation(libs.gson)
     implementation(libs.kotlinx.coroutines.test)
     implementation(libs.kotlinx.coroutines.core)

@@ -1,6 +1,12 @@
 package ru.hihit.cobuy.ui.components.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -26,9 +32,25 @@ fun NavGraph(
     vms: HashMap<String, ViewModel>,
     startDestination: String
 ) {
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
+    val density = LocalDensity.current
+    val screenWidthPx = with(density) { screenWidthDp.toPx().toInt() }
+    val duration = 300
     NavHost(
         navController = navHostController,
         startDestination = startDestination,
+        enterTransition = {
+            slideInHorizontally(initialOffsetX = { screenWidthPx }, animationSpec = tween(duration))
+        },
+        exitTransition = {
+            slideOutHorizontally(targetOffsetX = { -screenWidthPx }, animationSpec = tween(duration))
+        },
+        popEnterTransition = {
+            slideInHorizontally(initialOffsetX = { -screenWidthPx }, animationSpec = tween(duration))
+        },
+        popExitTransition = {
+            slideOutHorizontally(targetOffsetX = { screenWidthPx }, animationSpec = tween(duration))
+        },
     ) {
 
 
