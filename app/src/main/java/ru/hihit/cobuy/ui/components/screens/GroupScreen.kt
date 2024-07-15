@@ -59,7 +59,7 @@ fun GroupScreen(
 ) {
     val context = LocalContext.current
 
-    val isGroupLoading by remember { mutableStateOf(vm.isGroupLoading) }
+    val isGroupLoading by remember { vm.isGroupLoading }
 
     var isRefreshing by remember { vm.isRefreshing }
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
@@ -79,12 +79,13 @@ fun GroupScreen(
     when {
         openEditModal.value -> EditModal(
             onDismissRequest = { openEditModal.value = false },
-            group = group, // TODO: pass group from vm
+            group = group,
             onImageSelected = { vm.onImageSelected(it) },
             onUserRemoved = { vm.onUserRemoved(it) },
             onNameChanged = { vm.onNameChanged(it) },
             onQrGet = { vm.getInviteLink() },
-            onQrShare = { qr, contextt -> vm.shareQr(qr, contextt) }
+            onQrShare = { qr, contextt -> vm.shareQr(qr, contextt) },
+            vm = vm
         )
 
         openAddListModal.value -> AddListModal(
@@ -112,7 +113,7 @@ fun GroupScreen(
         Column {
             TopAppBarImpl(
                 title = {
-                    if (isGroupLoading.value) {
+                    if (isGroupLoading) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize(),

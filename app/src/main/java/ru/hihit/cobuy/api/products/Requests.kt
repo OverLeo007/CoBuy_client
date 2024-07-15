@@ -1,6 +1,8 @@
 package ru.hihit.cobuy.api.products
 
 import kotlinx.serialization.Serializable
+import ru.hihit.cobuy.models.ProductStatus
+import ru.hihit.cobuy.models.ProductStatusSerializer
 
 @Serializable
 data class CreateProductRequest(
@@ -12,5 +14,6 @@ data class CreateProductRequest(
 data class UpdateProductRequest(
     val name: String,
     val description: String?,
-    val status: Int?
+    @Serializable(with = ProductStatusSerializer::class)
+    val status: ProductStatus
 )

@@ -48,6 +48,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -55,10 +56,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import ru.hihit.cobuy.App
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.ui.components.composableElems.AvatarPlaceholder
+import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +74,7 @@ fun EditModal(
     onQrGet: () -> Unit = {},
     onQrShare: (ImageBitmap, Context) -> Unit,
     group: GroupData,
+    vm: GroupViewModel
 ) {
 
     var imageUri by remember { mutableStateOf(group.avaUrl?.let { Uri.parse(it) }) }
@@ -112,7 +116,7 @@ fun EditModal(
             onQrGet()
             AddUserModal(
                 onDismissRequest = { openInviteModal.value = false },
-                group = group,
+                vm = vm,
                 onShare = { qr, context -> onQrShare(qr, context) }
             )
         }
@@ -289,25 +293,29 @@ fun EditModal(
                                             tint = if (user.id == group.ownerId) MaterialTheme.colorScheme.onTertiary else Color.Transparent
                                         )
                                     }
-                                    if (user.id == group.ownerId) {
-                                        Row(
-                                            horizontalArrangement = Arrangement.End
-                                        ) {
+                                    val curUserId = LocalContext.current
+                                        .getSharedPreferences("CoBuyApp", Context.MODE_PRIVATE)
+                                        .getInt("user_id", 0)
+                                    Row(
+                                        horizontalArrangement = Arrangement.End
+                                    ) {
+                                        val canDelete = user.id != group.ownerId && group.ownerId == curUserId
 
-                                            IconButton(
-                                                onClick = {
-                                                    userToDelete = user
-                                                    openRemoveUserModal.value = true
-                                                }
-                                            ) {
-                                                Icon(
-                                                    painterResource(id = R.drawable.person_remove_24px),
-                                                    contentDescription = "delete",
-                                                    tint = MaterialTheme.colorScheme.onTertiary
-                                                )
+                                        IconButton(
+                                            enabled = canDelete,
+                                            onClick = {
+                                                userToDelete = user
+                                                openRemoveUserModal.value = true
                                             }
+                                        ) {
+                                            Icon(
+                                                painterResource(id = R.drawable.person_remove_24px),
+                                                contentDescription = "delete",
+                                                tint = if (canDelete) MaterialTheme.colorScheme.onTertiary else Color.Transparent
+                                            )
                                         }
                                     }
+
                                 }
                                 if (index < group.members.size - 1) {
                                     HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)

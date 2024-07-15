@@ -36,6 +36,7 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
 
     var isGroupLoading = mutableStateOf(true)
     var isRefreshing = mutableStateOf(false)
+    var isInviteLinkLoading = mutableStateOf(false)
 
     var group: MutableStateFlow<GroupData> =
         MutableStateFlow(GroupData(0, "", "", "", 0, 0, 0, emptyList()))
@@ -139,17 +140,22 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
     }
 
     fun getInviteLink() {
-        MiscRequester.getInviteToken(
-            groupId,
-            callback = { response ->
-                group.value.inviteLink = response?.token
-                Log.d("GroupViewModel", "getInviteLink: $response")
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "getInviteLink: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-            }
-        )
+        isInviteLinkLoading.value = true
+        viewModelScope.launch {
+            MiscRequester.getInviteToken(
+                groupId,
+                callback = { response ->
+                    group.value.inviteLink = response?.token
+                    isInviteLinkLoading.value = false
+                    Log.d("GroupViewModel", "getInviteLink: $response")
+                },
+                onError = { code, body ->
+                    isInviteLinkLoading.value = false
+                    Log.e("GroupViewModel", "getInviteLink: $code $body")
+                    Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
     }
 
     fun onDeleteList(toDelListId: Int) {

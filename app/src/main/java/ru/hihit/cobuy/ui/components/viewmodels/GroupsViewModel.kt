@@ -18,6 +18,7 @@ import ru.hihit.cobuy.api.GroupRequester
 import ru.hihit.cobuy.api.MiscRequester
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.models.Group
+import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.isJwt
 import ru.hihit.cobuy.utils.parseJson
 
@@ -110,7 +111,7 @@ class GroupsViewModel : ViewModel() {
             callback = { response ->
                 Log.d("GroupsViewModel", "joinGroup: $response")
                 updateGroups()
-                navHostController.navigate("groups")
+                navHostController.navigate(Route.Groups)
             },
             onError = { code, body ->
                 Log.d("GroupsViewModel", "Error: $code body: $body")

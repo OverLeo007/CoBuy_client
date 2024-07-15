@@ -18,6 +18,8 @@ class App : Application() {
     lateinit var retrofit: Retrofit
     private lateinit var okHttpClient: OkHttpClient
 
+    private val json = Json { coerceInputValues = true }
+
     override fun onCreate() {
         super.onCreate()
         instance = this
@@ -28,7 +30,7 @@ class App : Application() {
             .build()
 
         retrofit = Retrofit.Builder()
-            .addConverterFactory(Json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
 //            .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(this.getString(R.string.api_url))
             .client(okHttpClient)

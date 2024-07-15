@@ -1,17 +1,20 @@
 package ru.hihit.cobuy.ui.components.composableElems.modals.groupScreen
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,6 +22,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -30,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.GroupData
+import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 import ru.hihit.cobuy.utils.createQRCodeBitmap
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,13 +47,23 @@ fun AddUserModal(
     onDismissRequest: () -> Unit = {},
     onShare: (ImageBitmap, Context) -> Unit,
     context: Context = LocalContext.current,
-    group: GroupData,
+    vm: GroupViewModel
 ) {
-    val qrCodeBitmap =  createQRCodeBitmap(
-        context,
-        group.inviteLink!!,
-        logoRes = R.mipmap.ic_launcher_round,
-    )
+    val isInviteLinkLoading by remember {
+        vm.isInviteLinkLoading
+    }
+    val group by vm.group.collectAsState()
+    var qrCodeBitmap: ImageBitmap? = null
+
+    if (!isInviteLinkLoading) {
+        Log.d("AddUserModal", "group.inviteLink: ${group.inviteLink}")
+        if (group.inviteLink != null) {
+            qrCodeBitmap = createQRCodeBitmap(
+                context,
+                group.inviteLink!!,
+            )
+        }
+    }
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
@@ -74,11 +93,13 @@ fun AddUserModal(
                             }
                         },
                         actions = {
-                            IconButton(onClick = { onShare(qrCodeBitmap, context) }) {
-                                Icon(
-                                    painterResource(id = R.drawable.share_24px),
-                                    contentDescription = "share"
-                                )
+                            qrCodeBitmap?.let {
+                                IconButton(onClick = { onShare(it, context) }) {
+                                    Icon(
+                                        painterResource(id = R.drawable.share_24px),
+                                        contentDescription = "share"
+                                    )
+                                }
                             }
                         }
                     )
@@ -95,33 +116,18 @@ fun AddUserModal(
                             )
                             .fillMaxWidth()
                     ) {
-                        Image(bitmap = qrCodeBitmap, contentDescription = "QR code", modifier = Modifier)
-
+                        if (isInviteLinkLoading) {
+                            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                CircularProgressIndicator()
+                            }
+                        } else if (qrCodeBitmap != null) {
+                            Image(bitmap = qrCodeBitmap, contentDescription = "QR code", modifier = Modifier)
+                        }
                         Text(
                             text = stringResource(R.string.invite_to_group_word, group.name),
                             color = MaterialTheme.colorScheme.onTertiary,
                             style = MaterialTheme.typography.titleLarge
                         )
-//                        Spacer(modifier = Modifier.height(16.dp))
-//                        Row(
-//                            verticalAlignment = Alignment.CenterVertically
-//                        ) {
-//                            Text(
-//                                text = group.inviteLink,
-//                                maxLines = 2,
-//                                modifier = Modifier.weight(1f),
-//                                overflow = TextOverflow.Ellipsis
-//                            )
-//                            IconButton(onClick = {
-//                                context.copyToClipboard(group.inviteLink)
-//                            }) {
-//                                Icon(
-//                                    painterResource(id = R.drawable.content_copy_24px),
-//                                    contentDescription = "Add user",
-//                                    tint = MaterialTheme.colorScheme.onTertiary
-//                                )
-//                            }
-//                        }
                     }
                 }
             }

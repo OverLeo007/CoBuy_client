@@ -13,9 +13,9 @@ data class RegisterResponse(
 data class LoginResponse(
     @SerialName(value = "user")
     val data: UserData,
-    @SerialName(value = "access_token")
+    @SerialName(value = "accessToken")
     val token: String,
-    @SerialName(value = "token_type")
+    @SerialName(value = "tokenType")
     val tokenType: String
 )
 

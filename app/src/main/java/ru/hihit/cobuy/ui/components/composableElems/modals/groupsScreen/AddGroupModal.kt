@@ -217,6 +217,7 @@ fun AddGroupModal(
                         isNameCorrect = text.isNotEmpty()
                         if (isNameCorrect)
                             onAdd(Group(name = text, avaUrl = imageUri.toString()))
+                        isGroupAdding.value = false
                     },
                         enabled = !isGroupAdding.value
                     ) {

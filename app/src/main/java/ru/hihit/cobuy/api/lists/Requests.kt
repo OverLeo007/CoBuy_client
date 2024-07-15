@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateListRequest(
     val name: String,
-    @SerialName(value = "group_id")
     val groupId: Int
 )
 

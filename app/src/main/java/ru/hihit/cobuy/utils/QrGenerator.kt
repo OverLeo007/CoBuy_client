@@ -88,3 +88,42 @@ fun createQRCodeBitmap(
 
     return bitmap.asImageBitmap()
 }
+
+
+
+@Throws(WriterException::class)
+fun createQRCodeBitmap(
+    context: Context,
+    text: String
+): ImageBitmap {
+    val displayMetrics = context.resources.displayMetrics
+    val qrWidth = (displayMetrics.widthPixels  * 0.8f).roundToInt()
+    val qrHeight = qrWidth
+    val frameWidth = qrWidth / 10 // размер рамки - 10% от размера QR-кода
+    val width = qrWidth + 2 * frameWidth
+    val height = qrHeight + 2 * frameWidth
+
+    val hints = HashMap<EncodeHintType, ErrorCorrectionLevel>()
+    hints[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.H
+
+    val bitMatrix: BitMatrix =
+        MultiFormatWriter().encode(text, BarcodeFormat.QR_CODE, qrWidth, qrHeight, hints)
+
+    val qrBitmap = Bitmap.createBitmap(qrWidth, qrHeight, Bitmap.Config.ARGB_8888)
+    for (x in 0 until qrWidth) {
+        for (y in 0 until qrHeight) {
+            if (bitMatrix[x, y]) {
+                qrBitmap.setPixel(x, y, Color.BLACK)
+            } else {
+                qrBitmap.setPixel(x, y, Color.WHITE)
+            }
+        }
+    }
+
+    val bitmapWithFrame = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmapWithFrame)
+    canvas.drawColor(Color.WHITE) // заполняем весь bitmap белым цветом
+    canvas.drawBitmap(qrBitmap, frameWidth.toFloat(), frameWidth.toFloat(), null) // рисуем QR-код с отступом рамки
+
+    return bitmapWithFrame.asImageBitmap()
+}

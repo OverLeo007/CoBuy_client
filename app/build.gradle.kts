@@ -65,7 +65,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     // Retrofit
     implementation(libs.retrofit2.kotlinx.serialization.converter)
-//    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.jetbrains.kotlinx.serialization.json)
     implementation(libs.okhttp)
     implementation(libs.retrofit)
