@@ -43,4 +43,6 @@
     <string name="trying_to_auth">Trying to authenticate…</string>
     <string name="invalid_token">Invalid invitation token</string>
     <string name="share_qr_text">Scan this QR code in your CoBuy app to join %1$s group!</string>
+    <string name="leave_word">Leave</string>
+
 </resources>

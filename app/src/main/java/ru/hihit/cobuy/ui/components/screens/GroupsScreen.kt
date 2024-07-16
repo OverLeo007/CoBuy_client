@@ -1,6 +1,7 @@
 package ru.hihit.cobuy.ui.components.screens
 
 import android.Manifest
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -148,6 +149,9 @@ fun GroupsScreen(
                             },
                             onDelete = {
                                 vm.deleteGroup(group)
+                            },
+                            onLeave = {
+                                vm.leaveGroup(group)
                             }
                         )
                     }
@@ -169,15 +173,26 @@ fun GroupItem(
     group: GroupData,
     onClick: () -> Unit = {},
     onDelete: (GroupData) -> Unit = {},
+    onLeave: (GroupData) -> Unit = {}
 ) {
+    val curUserId = LocalContext.current
+        .getSharedPreferences("CoBuyApp", Context.MODE_PRIVATE)
+        .getInt("user_id", 0)
 
     val openModal = remember { mutableStateOf(false) }
-    val modalButtons = mapOf<String, (GroupData) -> Unit>(
-        stringResource(R.string.delete_word) to {
+    val modalButtons = mutableMapOf<String, (GroupData) -> Unit>()
+    modalButtons += stringResource(id = R.string.leave_word) to {
+        onLeave(group)
+        openModal.value = false
+    }
+
+    if (curUserId == group.ownerId) {
+        modalButtons += (stringResource(id = R.string.delete_word) to {
             onDelete(group)
             openModal.value = false
-        }
-    )
+        })
+    }
+
 
     when {
         openModal.value ->

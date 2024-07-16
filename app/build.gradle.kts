@@ -15,11 +15,13 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "PUSHER_APP_ID", "\"${project.property("pusher.app_id")}\"")
+        buildConfigField("String", "PUSHER_KEY", "\"${project.property("pusher.key")}\"")
+        buildConfigField("String", "PUSHER_CLUSTER", "\"${project.property("pusher.cluster")}\"")
     }
 
     buildTypes {
@@ -40,6 +42,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
@@ -53,7 +56,7 @@ android {
 
 val cameraxVersion = "1.0.2"
 dependencies {
-    // https://mvnrepository.com/artifact/androidx.lifecycle/lifecycle-viewmodel-compose
+    implementation("com.pusher:pusher-java-client:2.4.2")
     implementation("androidx.compose.runtime:runtime:1.6.8")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
     implementation("androidx.compose.runtime:runtime-rxjava2:1.6.8")

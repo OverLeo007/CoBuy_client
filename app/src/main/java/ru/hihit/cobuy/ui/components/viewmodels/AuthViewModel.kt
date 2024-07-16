@@ -13,7 +13,7 @@ import ru.hihit.cobuy.api.auth.RegisterRequest
 import ru.hihit.cobuy.utils.parseJson
 import ru.hihit.cobuy.utils.saveManyToPreferences
 
-class AuthViewModel() : ViewModel() {
+class AuthViewModel : ViewModel() {
 
     var apiResponse: String by mutableStateOf("")
     var isLoading: Boolean by mutableStateOf(false)
@@ -84,6 +84,7 @@ class AuthViewModel() : ViewModel() {
         )
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun setUpErrors(it: Map<String, Any>?) {
         it?.let {
             if (it.containsKey("errors")) {

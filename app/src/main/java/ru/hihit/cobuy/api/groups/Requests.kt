@@ -6,3 +6,9 @@ import kotlinx.serialization.Serializable
 data class CreateUpdateGroupRequest(
     val name: String,
 )
+
+@Serializable
+data class KickUserRequest(
+    val groupId: Int,
+    val userId: Int
+)

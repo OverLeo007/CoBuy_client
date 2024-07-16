@@ -1,6 +1,5 @@
 package ru.hihit.cobuy.ui.components.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -81,7 +80,7 @@ fun GroupScreen(
             onDismissRequest = { openEditModal.value = false },
             group = group,
             onImageSelected = { vm.onImageSelected(it) },
-            onUserRemoved = { vm.onUserRemoved(it) },
+            onUserRemoved = { vm.onKickUser(it) },
             onNameChanged = { vm.onNameChanged(it) },
             onQrGet = { vm.getInviteLink() },
             onQrShare = { qr, contextt -> vm.shareQr(qr, contextt) },

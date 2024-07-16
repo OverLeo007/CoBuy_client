@@ -8,6 +8,7 @@ import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Response
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 
@@ -18,7 +19,11 @@ class App : Application() {
     lateinit var retrofit: Retrofit
     private lateinit var okHttpClient: OkHttpClient
 
-    private val json = Json { coerceInputValues = true }
+    @OptIn(ExperimentalSerializationApi::class)
+    private val json = Json {
+        coerceInputValues = true
+        explicitNulls = false
+    }
 
     override fun onCreate() {
         super.onCreate()

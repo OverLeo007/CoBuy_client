@@ -38,7 +38,7 @@ object ProductStatusSerializer : KSerializer<ProductStatus> {
         return if (intValue != null) {
             ProductStatus.fromInt(intValue)
         } else {
-            ProductStatus.fromInt(0) // Здесь мы устанавливаем значение по умолчанию, если значение null
+            ProductStatus.fromInt(0)
         }
     }
 }

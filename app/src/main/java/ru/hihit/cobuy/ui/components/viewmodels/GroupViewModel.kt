@@ -27,8 +27,8 @@ import ru.hihit.cobuy.api.ListRequester
 import ru.hihit.cobuy.api.MiscRequester
 import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
+import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.lists.CreateListRequest
-import ru.hihit.cobuy.models.ProductList
 import java.io.File
 import java.io.FileOutputStream
 
@@ -102,8 +102,20 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
         Log.d("GroupViewModel", "onImageSelected: $imageUri")
     }
 
-    fun onUserRemoved(user: UserData) {
-        Log.d("GroupViewModel", "onUserDeleted: $user")
+    fun onKickUser(user: UserData) {
+        GroupRequester.kickFromGroup(
+            KickUserRequest(groupId, user.id),
+            callback = {
+                Log.d("GroupViewModel", "onKickUser: $it")
+                val curUsers = group.value.members.toMutableList()
+                curUsers.removeIf { u -> u.id == user.id }
+                group.value.members = curUsers
+            },
+            onError = { code, body ->
+                Log.e("GroupViewModel", "onKickUser: $code $body")
+                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
+            }
+        )
     }
 
     fun onNameChanged(name: String) {

@@ -16,6 +16,7 @@ import ru.hihit.cobuy.api.groups.CreateGroupResponse
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.groups.GetGroupsResponse
 import ru.hihit.cobuy.api.groups.GetUpdateGroupResponse
+import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.lists.CreateListRequest
 import ru.hihit.cobuy.api.lists.CreateListResponse
 import ru.hihit.cobuy.api.lists.GetListsResponse
@@ -107,6 +108,24 @@ object GroupRequester {
             request = { Api.groups.deleteGroup(id) },
             callback = { response -> callback(response != null) },
             errorMessage = "Delete Group Error",
+            onError = onError
+        )
+    }
+
+    fun leaveGroup(groupId: Int, callback: (Boolean) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+        launchRequest(
+            request = { Api.groups.leaveGroup(groupId) },
+            callback = { response -> callback(response != null) },
+            errorMessage = "Leave Group Error",
+            onError = onError
+        )
+    }
+
+    fun kickFromGroup(request: KickUserRequest, callback: (Boolean) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+        launchRequest(
+            request = { Api.groups.kickUser(request) },
+            callback = { response -> callback(response != null) },
+            errorMessage = "Kick User Error",
             onError = onError
         )
     }

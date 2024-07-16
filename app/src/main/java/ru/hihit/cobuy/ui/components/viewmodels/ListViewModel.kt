@@ -1,9 +1,7 @@
 package ru.hihit.cobuy.ui.components.viewmodels
 
 import android.util.Log
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,8 +14,6 @@ import ru.hihit.cobuy.api.ProductRequester
 import ru.hihit.cobuy.api.lists.UpdateListRequest
 import ru.hihit.cobuy.api.products.CreateProductRequest
 import ru.hihit.cobuy.api.products.UpdateProductRequest
-import ru.hihit.cobuy.models.Product
-import ru.hihit.cobuy.models.ProductList
 
 class ListViewModel(private val listId: Int) : ViewModel() {
     var products: MutableStateFlow<List<ProductData>> = MutableStateFlow(emptyList())
@@ -66,6 +62,15 @@ class ListViewModel(private val listId: Int) : ViewModel() {
         products.value.find { it.id == product.id }?.let {
             it.status = product.status
         }
+        ProductRequester.updateProduct(listId, product.id,
+            UpdateProductRequest(status = product.status),
+            callback = { response ->
+                Log.d("ListViewModel", "onProductStatusChanged: $response")
+            },
+            onError = { code, body ->
+                Log.e("ListViewModel", "onProductStatusChanged: $code $body")
+            }
+        )
 
         Log.d("ListViewModel", "onProductStatusChanged: $product")
     }

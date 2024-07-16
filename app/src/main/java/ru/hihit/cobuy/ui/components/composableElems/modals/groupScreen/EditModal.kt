@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,7 +55,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import ru.hihit.cobuy.App
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.api.UserData
@@ -83,7 +81,7 @@ fun EditModal(
     var isEditing by remember { mutableStateOf(false) }
     var isError by remember { mutableStateOf(false) }
     var text by remember { mutableStateOf(group.name) }
-
+    var users = group.members.toMutableList()
 
     val launcher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -107,6 +105,7 @@ fun EditModal(
             onConfirmRequest = {
                 openRemoveUserModal.value = false
                 onUserRemoved(it)
+                users.remove(it)
             },
             group = group,
             user = userToDelete!!
@@ -267,7 +266,7 @@ fun EditModal(
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
                         LazyColumn {
-                            itemsIndexed(group.members) { index, user ->
+                            itemsIndexed(users) { index, user ->
                                 Row(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically,

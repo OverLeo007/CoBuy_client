@@ -12,8 +12,8 @@ data class CreateProductRequest(
 
 @Serializable
 data class UpdateProductRequest(
-    val name: String,
-    val description: String?,
+    val name: String? = null,
+    val description: String? = null,
     @Serializable(with = ProductStatusSerializer::class)
-    val status: ProductStatus
+    val status: ProductStatus?
 )

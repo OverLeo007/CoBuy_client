@@ -1,6 +1,5 @@
 package ru.hihit.cobuy.ui.components.screens
 
-import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -33,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,10 +48,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kotlinx.coroutines.delay
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.ProductData
-import ru.hihit.cobuy.models.Product
 import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.ui.components.composableElems.AddButton
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
@@ -74,7 +70,7 @@ fun ListScreen(
     val isListLoading by remember {
         vm.isListLoading
     }
-    var isRefreshing by remember { vm.isRefreshing }
+    val isRefreshing by remember { vm.isRefreshing }
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
 
@@ -163,8 +159,8 @@ fun ProductItem(
     onEdited: (ProductData) -> Unit = {},
     onDelete: (ProductData) -> Unit = {}
 ) {
-    var isBought by remember { mutableStateOf(false) }
-    var isPlanned by remember { mutableStateOf(false) }
+    var isBought by remember { mutableStateOf(product.status == ProductStatus.BOUGHT) }
+    var isPlanned by remember { mutableStateOf(product.status == ProductStatus.PLANNED) }
     val statusChanged = remember { mutableStateOf(false) }
     when {
         statusChanged.value -> {

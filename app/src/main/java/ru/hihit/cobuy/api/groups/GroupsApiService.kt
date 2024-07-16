@@ -24,4 +24,10 @@ interface GroupsApiService {
     @DELETE("api/group/{id}")
     suspend fun deleteGroup(@Path("id") id: Int): Response<Unit>
 
+    @POST("api/group/{groupId}/leave")
+    suspend fun leaveGroup(@Path("groupId") groupId: Int): Response<Unit>
+
+    @POST("api/group/kick")
+    suspend fun kickUser(@Body request: KickUserRequest): Response<Unit>
+
 }

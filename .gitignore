@@ -16,3 +16,4 @@
 local.properties
 /app/src/androidTest/java/ru/hihit/cobuy/
 /app/src/test/java/ru/hihit/cobuy/
+gradle.properties

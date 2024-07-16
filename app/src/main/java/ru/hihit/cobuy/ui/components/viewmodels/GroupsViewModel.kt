@@ -98,10 +98,20 @@ class GroupsViewModel : ViewModel() {
     }
 
     fun deleteGroup(group: GroupData) {
+        groups.value = groups.value.filter { it.id != group.id }
+        GroupRequester.deleteGroup(
+            id = group.id,
+            callback = { response ->
+                Log.d("GroupsViewModel", "deleteGroup: $response")
+            },
+            onError = { code, body ->
+                Log.e("GroupsViewModel", "deleteGroup: $code $body")
+            }
+        )
         Log.d("GroupsViewModel", "deleteGroup: $group")
     }
 
-    fun joinGroup(token: String, navHostController: NavHostController): Unit {
+    fun joinGroup(token: String, navHostController: NavHostController) {
         if (!isJwt(token)) {
             scanError = App.getContext().getString(R.string.invalid_token)
             return
@@ -149,5 +159,19 @@ class GroupsViewModel : ViewModel() {
                 isLoading.value = false
             }
         )
+    }
+
+    fun leaveGroup(group: GroupData) {
+        groups.value = groups.value.filter { it.id != group.id }
+        GroupRequester.leaveGroup(
+            groupId = group.id,
+            callback = { response ->
+                Log.d("GroupsViewModel", "leaveGroup: $response")
+            },
+            onError = { code, body ->
+                Log.e("GroupsViewModel", "leaveGroup: $code $body")
+            }
+        )
+        Log.d("GroupsViewModel", "leaveGroup: $group")
     }
 }
