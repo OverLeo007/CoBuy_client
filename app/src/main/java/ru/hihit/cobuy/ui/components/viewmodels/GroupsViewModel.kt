@@ -7,10 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.GroupData
@@ -36,17 +34,6 @@ class GroupsViewModel : ViewModel() {
         getGroups()
     }
 
-
-    fun onWsEditGroup(editedGroup: GroupData) {
-        viewModelScope.launch {
-            val currentGroups = groups.value.toMutableList()
-            val index = currentGroups.indexOfFirst { it.id == editedGroup.id }
-            if (index != -1) {
-                currentGroups[index] = editedGroup
-                groups.value = currentGroups
-            }
-        }
-    }
 
     private fun getGroups() {
         getAndProcessGroups { groups.value = it }

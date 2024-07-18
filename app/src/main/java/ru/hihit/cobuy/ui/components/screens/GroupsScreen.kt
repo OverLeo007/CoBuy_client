@@ -70,7 +70,6 @@ fun GroupsScreen(
     val isRefreshing by vm.isLoading.observeAsState(false)
 
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
-
     val groups by vm.groups.collectAsState()
     Log.d("GroupsScreen", groups.toString())
 

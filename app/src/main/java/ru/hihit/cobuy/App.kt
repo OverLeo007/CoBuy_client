@@ -2,22 +2,22 @@ package ru.hihit.cobuy
 
 import android.app.Application
 import android.content.Context
-import android.util.Log
-import kotlinx.serialization.json.Json
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
-import okhttp3.Response
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Response
 import retrofit2.Retrofit
-
+import ru.hihit.cobuy.pusher.PusherService
 
 
 class App : Application() {
 
     lateinit var retrofit: Retrofit
     private lateinit var okHttpClient: OkHttpClient
+    lateinit var pusherService: PusherService
 
     @OptIn(ExperimentalSerializationApi::class)
     private val json = Json {
@@ -27,16 +27,15 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        pusherService = PusherService()
         instance = this
         val authInterceptor = AuthInterceptor(this)
-
         okHttpClient = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
             .build()
 
         retrofit = Retrofit.Builder()
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
-//            .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(this.getString(R.string.api_url))
             .client(okHttpClient)
             .build()
@@ -51,6 +50,11 @@ class App : Application() {
 
         fun getContext(): Context {
             return instance
+        }
+
+        fun getPusherService(): PusherService {
+            instance.pusherService.isPusherConnected()
+            return instance.pusherService
         }
     }
 }
@@ -70,7 +74,7 @@ class AuthInterceptor(context: Context) : Interceptor {
 
     private fun getToken(): String {
         val token = sharedPreferences.getString("auth_token", "") ?: ""
-        Log.d("AuthInterceptor", "Got token: $token")
+//        Log.d("AuthInterceptor", "Got token: $token")
         return token
     }
 }
