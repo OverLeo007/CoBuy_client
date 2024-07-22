@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.pusher.client.channel.PusherEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -22,7 +23,6 @@ import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.lists.CreateListRequest
-import ru.hihit.cobuy.pusher.PusherWebsocketClient
 import ru.hihit.cobuy.utils.makeShareQrIntent
 
 class GroupViewModel(private val groupId: Int) : ViewModel() {
@@ -35,7 +35,7 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
         MutableStateFlow(GroupData(0, "", "", "", 0, 0, 0, emptyList()))
     var lists: MutableStateFlow<List<ListData>> = MutableStateFlow(emptyList())
 
-    private val pusherService = PusherWebsocketClient()
+    private val pusherService = App.getPusherService()
 
     init {
         updateAll()
@@ -54,7 +54,7 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
     }
 
 
-    private fun onWsEvent(event: String) {
+    private fun onWsEvent(event: PusherEvent) {
         Log.d("GroupViewModel", "onWsEvent: $event")
     }
 
@@ -203,7 +203,7 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
     }
 
     fun shareQr(qrBitmap: ImageBitmap, context: Context) {
-        val shareIntent: Intent = makeShareQrIntent(context, qrBitmap, group.value.name)
+        val shareIntent: Intent = context.makeShareQrIntent(qrBitmap, group.value.name)
         context.startActivity(Intent.createChooser(shareIntent, "Share QR Code"))
     }
 

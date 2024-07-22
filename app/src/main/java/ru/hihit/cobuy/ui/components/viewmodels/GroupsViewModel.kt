@@ -30,6 +30,9 @@ class GroupsViewModel : ViewModel() {
     val openAddModal = mutableStateOf(false)
     val isAddingGroup = mutableStateOf(false)
 
+    val pusherService = App.getPusherService()
+
+
     init {
         getGroups()
     }

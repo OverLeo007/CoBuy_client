@@ -60,6 +60,7 @@ import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.ui.components.composableElems.AvatarPlaceholder
 import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
+import ru.hihit.cobuy.utils.getFromPreferences
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -293,8 +294,7 @@ fun EditModal(
                                         )
                                     }
                                     val curUserId = LocalContext.current
-                                        .getSharedPreferences("CoBuyApp", Context.MODE_PRIVATE)
-                                        .getInt("user_id", 0)
+                                        .getFromPreferences("user_id", 0)
                                     Row(
                                         horizontalArrangement = Arrangement.End
                                     ) {

@@ -12,6 +12,8 @@ import ru.hihit.cobuy.api.auth.LoginResponse
 import ru.hihit.cobuy.api.auth.RegisterRequest
 import ru.hihit.cobuy.utils.parseJson
 import ru.hihit.cobuy.utils.saveManyToPreferences
+import ru.hihit.cobuy.utils.saveToPreferences
+import ru.hihit.cobuy.utils.saveUserDataToPreferences
 
 class AuthViewModel : ViewModel() {
 
@@ -74,14 +76,9 @@ class AuthViewModel : ViewModel() {
     }
 
     private fun setUpUser(loginResponse: LoginResponse) {
-        saveManyToPreferences(App.getContext(),
-            mapOf(
-                "auth_token" to loginResponse.token,
-                "user_id" to loginResponse.data.id,
-                "user_name" to loginResponse.data.name,
-                "user_email" to loginResponse.data.email
-            )
-        )
+        val context = App.getContext()
+        context.saveToPreferences("auth_token", loginResponse.token)
+        context.saveUserDataToPreferences(loginResponse.data)
     }
 
     @Suppress("UNCHECKED_CAST")

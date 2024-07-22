@@ -29,8 +29,9 @@ class MainActivity : ComponentActivity() {
             }
         }
         super.onCreate(savedInstanceState)
+        val context = App.getContext()
         var startDestination: String = Route.Authorization
-        if (getFromPreferences(App.getContext(), "auth_token", "") == "") {
+        if (context.getFromPreferences("auth_token", "") == "") {
             setContent {
                 CoBuyTheme {
                     MainScreen(startDestination)
@@ -41,18 +42,15 @@ class MainActivity : ComponentActivity() {
             AuthRequester.checkLogin(
                 callback = { response ->
                     if (response != null) {
-                        if (getFromPreferences(
-                                App.getContext(),
+                        if (context.getFromPreferences(
                                 "user_id",
                                 -1
                             ) == response.userData.id
-                            && getFromPreferences(
-                                App.getContext(),
+                            && context.getFromPreferences(
                                 "user_name",
                                 ""
                             ) == response.userData.name
-                            && getFromPreferences(
-                                App.getContext(),
+                            && context.getFromPreferences(
                                 "user_email",
                                 ""
                             ) == response.userData.email

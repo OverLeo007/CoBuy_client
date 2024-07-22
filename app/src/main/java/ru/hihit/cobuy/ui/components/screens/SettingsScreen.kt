@@ -5,8 +5,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,21 +37,19 @@ fun SettingsScreen(
     navHostController: NavHostController,
     vm: SettingsViewModel
 ) {
-    var imageUri by remember { mutableStateOf<Uri?>(Uri.parse(vm.avatarUrl)) }
 
     var isEditing by remember { mutableStateOf(false) }
     var isError by remember { mutableStateOf(false) }
     var text by remember { mutableStateOf(vm.user.name) }
 
-    val launcher =
-        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-            uri?.let {
-                imageUri = it
-                vm.onAvatarSelected(it) // Вызовите функцию обратного вызова с Uri изображения
-            }
-        }
+//    val launcher =
+//        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
+//            uri?.let {
+//                imageUri = it
+//                vm.onAvatarSelected(it) // Вызовите функцию обратного вызова с Uri изображения
+//            }
+//        }
 
-    val context = LocalContext.current
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
             TopAppBarImpl(
@@ -81,6 +82,13 @@ fun SettingsScreen(
             )
 
             Spacer(modifier = Modifier.size(20.dp))
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(PaddingValues(start = 16.dp))
+            ) {
+                Text(
+                    text = "Login as:\nId:${vm.user.id}\nLogin: ${vm.user.name}\nEmail: ${vm.user.email}\n",
+                )
+            }
             Box(Modifier.fillMaxSize()) {
                 Text("Settings will be here in the future", modifier = Modifier.align(Alignment.Center))
             }

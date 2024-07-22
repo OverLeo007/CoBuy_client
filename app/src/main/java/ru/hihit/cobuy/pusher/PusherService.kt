@@ -42,7 +42,15 @@ class PusherService {
             }
         }
         channel.bind(eventName, listener)
+
         Log.d("PusherService", "Subscribed to channel? ${channel.isSubscribed}")
+    }
+
+    fun subscribeToChannel(
+        channelName: String
+    ) : Channel {
+        Log.d("PusherService", "Subscribing to channel $channelName")
+        return pusher.subscribe(channelName)
     }
 
     fun isPusherConnected(): Unit {
