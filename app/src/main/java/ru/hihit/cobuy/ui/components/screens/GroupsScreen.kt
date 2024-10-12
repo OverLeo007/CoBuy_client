@@ -48,14 +48,13 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.ui.components.composableElems.AddButton
-import ru.hihit.cobuy.ui.components.composableElems.AvatarPlaceholder
+import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.composableElems.UniversalModal
 import ru.hihit.cobuy.ui.components.composableElems.modals.groupsScreen.AddGroupModal
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
-import ru.hihit.cobuy.utils.toUri
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -214,8 +213,8 @@ fun GroupItem(
                 .fillMaxWidth()
         ) {
 
-            AvatarPlaceholder(
-                uri = group.avaUrl.toUri(),
+            ImagePlaceholder(
+                uri = group.avaUrl,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape),

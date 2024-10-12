@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -58,12 +59,12 @@ import androidx.compose.ui.window.Dialog
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.api.UserData
-import ru.hihit.cobuy.ui.components.composableElems.AvatarPlaceholder
+import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 import ru.hihit.cobuy.utils.getFromPreferences
 
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun EditModal(
     onDismissRequest: () -> Unit = {},
@@ -76,7 +77,7 @@ fun EditModal(
     vm: GroupViewModel
 ) {
 
-    var imageUri by remember { mutableStateOf(group.avaUrl?.let { Uri.parse(it) }) }
+    var imageUri by remember { mutableStateOf(group.avaUrl) }
     var userToDelete by remember { mutableStateOf<UserData?>(null) }
 
     var isEditing by remember { mutableStateOf(false) }
@@ -190,7 +191,7 @@ fun EditModal(
                                 )
                             )
                         ) {
-                            AvatarPlaceholder(
+                            ImagePlaceholder(
                                 uri = imageUri,
                                 modifier = Modifier
                                     .size(42.dp)

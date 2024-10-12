@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.api.GroupRequester
+import ru.hihit.cobuy.api.ImageRequester
 import ru.hihit.cobuy.api.ListData
 import ru.hihit.cobuy.api.ListRequester
 import ru.hihit.cobuy.api.MiscRequester
@@ -23,7 +24,9 @@ import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.lists.CreateListRequest
+import ru.hihit.cobuy.utils.getMultipartImageFromUri
 import ru.hihit.cobuy.utils.makeShareQrIntent
+import ru.hihit.cobuy.utils.toUri
 
 class GroupViewModel(private val groupId: Int) : ViewModel() {
 
@@ -32,7 +35,7 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
     var isInviteLinkLoading = mutableStateOf(false)
 
     var group: MutableStateFlow<GroupData> =
-        MutableStateFlow(GroupData(0, "", "", "", 0, 0, 0, emptyList()))
+        MutableStateFlow(GroupData(0, "", "".toUri(), "", 0, 0, 0, emptyList()))
     var lists: MutableStateFlow<List<ListData>> = MutableStateFlow(emptyList())
 
     private val pusherService = App.getPusherService()
@@ -70,6 +73,9 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
             callback = { response ->
                 response?.data?.let {
                     group.value = it
+                    group.value.avaUrl?.let {
+                        group.value.avaUrl = group.value.avaUrl.toString().replace("public", "http://hihit.sytes.net/storage").toUri()  //FIXME remove this line
+                }
                 }
                 Log.d("GroupViewModel", "getGroup: $response")
                 isGroupLoading.value = false
@@ -78,6 +84,21 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
                 Log.e("GroupViewModel", "getGroup: $code $body")
                 Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
                 isGroupLoading.value = false
+            }
+        )
+    }
+
+    private fun getGroupImage() {
+        ImageRequester.getGroupImage(groupId,
+            callback = { response ->
+                response?.data?.let {
+                    group.value.avaUrl = it.avaUrl
+                }
+                Log.d("GroupViewModel", "getGroupImage: $response")
+            },
+            onError = { code, body ->
+                Log.e("GroupViewModel", "getGroupImage: $code $body")
+                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
             }
         )
     }
@@ -114,8 +135,23 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
         }
     }
 
-    fun onImageSelected(imageUri: Uri) {
-        Log.d("GroupViewModel", "onImageSelected: $imageUri")
+    fun onImageSelected(context: Context, imageUri: Uri) {
+        val picData = context.getMultipartImageFromUri(imageUri)
+        picData?.let {
+            ImageRequester.uploadGroupImage(
+                groupId,
+                picData,
+                callback = {
+                    Log.d("GroupViewModel", "onImageSelected: $it")
+                    getGroupImage()
+                },
+                onError = { code, body ->
+                    Log.e("GroupViewModel", "onImageSelected: $code $body")
+                    Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
+                }
+            )
+        }
+        Log.d("GroupViewModel", "onImageSelected: $picData")
     }
 
     fun onKickUser(user: UserData) {

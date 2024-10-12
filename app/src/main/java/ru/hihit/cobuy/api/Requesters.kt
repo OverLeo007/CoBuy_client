@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.Response
 import ru.hihit.cobuy.api.auth.CheckLoginResponse
@@ -17,6 +18,8 @@ import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.groups.GetGroupsResponse
 import ru.hihit.cobuy.api.groups.GetUpdateGroupResponse
 import ru.hihit.cobuy.api.groups.KickUserRequest
+import ru.hihit.cobuy.api.images.GetGroupImageResponse
+import ru.hihit.cobuy.api.images.GetProductImageResponse
 import ru.hihit.cobuy.api.lists.CreateListRequest
 import ru.hihit.cobuy.api.lists.CreateListResponse
 import ru.hihit.cobuy.api.lists.GetListsResponse
@@ -32,7 +35,11 @@ import ru.hihit.cobuy.api.products.UpdateProductRequest
 
 
 object AuthRequester {
-    fun login(request: LoginRequest, callback: (LoginResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun login(
+        request: LoginRequest,
+        callback: (LoginResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.auth.login(request) },
             callback = callback,
@@ -41,7 +48,11 @@ object AuthRequester {
         )
     }
 
-    fun register(request: RegisterRequest, callback: (RegisterResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun register(
+        request: RegisterRequest,
+        callback: (RegisterResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.auth.register(request) },
             callback = callback,
@@ -62,7 +73,11 @@ object AuthRequester {
 
 
 object GroupRequester {
-    fun createGroup(request: CreateUpdateGroupRequest, callback: (CreateGroupResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun createGroup(
+        request: CreateUpdateGroupRequest,
+        callback: (CreateGroupResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.groups.createGroup(request) },
             callback = callback,
@@ -80,7 +95,11 @@ object GroupRequester {
         )
     }
 
-    fun getGroupById(id: Int, callback: (GetUpdateGroupResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun getGroupById(
+        id: Int,
+        callback: (GetUpdateGroupResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.groups.getGroupById(id) },
             callback = callback,
@@ -112,7 +131,11 @@ object GroupRequester {
         )
     }
 
-    fun leaveGroup(groupId: Int, callback: (Boolean) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun leaveGroup(
+        groupId: Int,
+        callback: (Boolean) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.groups.leaveGroup(groupId) },
             callback = { response -> callback(response != null) },
@@ -121,7 +144,11 @@ object GroupRequester {
         )
     }
 
-    fun kickFromGroup(request: KickUserRequest, callback: (Boolean) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun kickFromGroup(
+        request: KickUserRequest,
+        callback: (Boolean) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.groups.kickUser(request) },
             callback = { response -> callback(response != null) },
@@ -132,7 +159,11 @@ object GroupRequester {
 }
 
 object ListRequester {
-    fun createList(request: CreateListRequest, callback: (CreateListResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun createList(
+        request: CreateListRequest,
+        callback: (CreateListResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.lists.createList(request) },
             callback = callback,
@@ -141,7 +172,11 @@ object ListRequester {
         )
     }
 
-    fun getLists(groupId: Int?, callback: (GetListsResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun getLists(
+        groupId: Int?,
+        callback: (GetListsResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.lists.getLists(groupId) },
             callback = callback,
@@ -150,7 +185,11 @@ object ListRequester {
         )
     }
 
-    fun getListById(id: Int, callback: (GetUpdateListResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun getListById(
+        id: Int,
+        callback: (GetUpdateListResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.lists.getListById(id) },
             callback = callback,
@@ -199,7 +238,11 @@ object ProductRequester {
         )
     }
 
-    fun getProducts(listId: Int, callback: (GetProductsResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun getProducts(
+        listId: Int,
+        callback: (GetProductsResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.products.getProducts(listId) },
             callback = callback,
@@ -208,7 +251,12 @@ object ProductRequester {
         )
     }
 
-    fun getProductById(listId: Int, id: Int, callback: (GetUpdateProductResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun getProductById(
+        listId: Int,
+        id: Int,
+        callback: (GetUpdateProductResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.products.getProductById(listId, id) },
             callback = callback,
@@ -233,7 +281,12 @@ object ProductRequester {
         )
     }
 
-    fun deleteProduct(listId: Int, id: Int, callback: (Boolean) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun deleteProduct(
+        listId: Int,
+        id: Int,
+        callback: (Boolean) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.products.deleteProduct(listId, id) },
             callback = { response -> callback(response != null) },
@@ -245,7 +298,11 @@ object ProductRequester {
 
 
 object MiscRequester {
-    fun getInviteToken(groupId: Int, callback: (InviteTokenResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun getInviteToken(
+        groupId: Int,
+        callback: (InviteTokenResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.misc.getInviteToken(groupId) },
             callback = callback,
@@ -254,11 +311,75 @@ object MiscRequester {
         )
     }
 
-    fun acceptInvitation(token: String, callback: (InvitationStatusResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
+    fun acceptInvitation(
+        token: String,
+        callback: (InvitationStatusResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
         launchRequest(
             request = { Api.misc.acceptInvitation(token) },
             callback = callback,
             errorMessage = "Accept Invitation Error",
+            onError = onError
+        )
+    }
+
+}
+
+
+object ImageRequester {
+    fun uploadGroupImage(
+        groupId: Int,
+        image: MultipartBody.Part,
+        callback: (GetGroupImageResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
+        launchRequest(
+            request = { Api.images.setGroupImage(groupId, image) },
+            callback = callback,
+            errorMessage = "Upload Group Image Error",
+            onError = onError
+        )
+    }
+
+    fun getGroupImage(
+        groupId: Int,
+        callback: (GetGroupImageResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
+        launchRequest(
+            request = { Api.images.getGroupImage(groupId) },
+            callback = callback,
+            errorMessage = "Get Group Image Error",
+            onError = onError
+        )
+    }
+
+    fun uploadProductImage(
+        listId: Int,
+        productId: Int,
+        image: MultipartBody.Part,
+        callback: (GetProductImageResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
+        launchRequest(
+            request = { Api.images.setProductImage(listId, productId, image) },
+            callback = callback,
+            errorMessage = "Upload Product Image Error",
+            onError = onError
+        )
+    }
+
+    fun getProductImage(
+        listId: Int,
+        productId: Int,
+        callback: (GetProductImageResponse?) -> Unit,
+        onError: (Int, ResponseBody?) -> Unit
+    ) {
+        launchRequest(
+            request = { Api.images.getProductImage(listId, productId) },
+            callback = callback,
+            errorMessage = "Get Product Image Error",
             onError = onError
         )
     }

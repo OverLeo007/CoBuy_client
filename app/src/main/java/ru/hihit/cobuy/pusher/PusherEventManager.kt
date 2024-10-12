@@ -26,6 +26,7 @@ class PusherManager {
      * 	    }
      *  ]
      * }
+     *
      */
     private val channelsState =
         mutableMapOf<
@@ -52,11 +53,9 @@ class PusherManager {
     fun subscribeToChannel(
         channelName: String
     ) {
-        if (channelsState.containsKey(channelName)) {
-            return
+        channelsState.getOrPut(channelName) {
+            MutablePair(pusherService.subscribeToChannel(channelName), mutableMapOf())
         }
-        val channel = pusherService.subscribeToChannel(channelName)
-        channelsState[channelName] = MutablePair(channel, mutableMapOf())
     }
 
     fun unsubscribeFromChannel(channelName: String) {

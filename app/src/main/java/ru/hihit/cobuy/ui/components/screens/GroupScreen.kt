@@ -40,7 +40,7 @@ import kotlinx.coroutines.delay
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.ListData
 import ru.hihit.cobuy.ui.components.composableElems.AddButton
-import ru.hihit.cobuy.ui.components.composableElems.AvatarPlaceholder
+import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.composableElems.UniversalModal
@@ -48,7 +48,6 @@ import ru.hihit.cobuy.ui.components.composableElems.modals.groupScreen.AddListMo
 import ru.hihit.cobuy.ui.components.composableElems.modals.groupScreen.EditModal
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
-import ru.hihit.cobuy.utils.toUri
 import kotlin.math.roundToInt
 
 @Composable
@@ -79,7 +78,7 @@ fun GroupScreen(
         openEditModal.value -> EditModal(
             onDismissRequest = { openEditModal.value = false },
             group = group,
-            onImageSelected = { vm.onImageSelected(it) },
+            onImageSelected = { vm.onImageSelected(context, it) },
             onUserRemoved = { vm.onKickUser(it) },
             onNameChanged = { vm.onNameChanged(it) },
             onQrGet = { vm.getInviteLink() },
@@ -137,8 +136,8 @@ fun GroupScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.Center
                             ) {
-                                AvatarPlaceholder(
-                                    uri = group.avaUrl.toUri(),
+                                ImagePlaceholder(
+                                    uri = group.avaUrl,
                                     modifier = Modifier
                                         .size(48.dp)
                                         .clip(CircleShape),

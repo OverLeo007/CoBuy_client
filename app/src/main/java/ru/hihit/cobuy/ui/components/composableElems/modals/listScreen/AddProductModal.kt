@@ -51,7 +51,6 @@ import ru.hihit.cobuy.api.ProductData
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
-@Preview
 fun AddProductModal(
     onAdd: (ProductData) -> Unit = {},
     onDismiss: () -> Unit = {},

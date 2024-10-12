@@ -18,7 +18,12 @@ import ru.hihit.cobuy.ui.theme.getColorByHash
 
 
 @Composable
-fun AvatarPlaceholder(uri: Uri?, modifier: Modifier, name: String) {
+fun ImagePlaceholder(
+    uri: Uri?,
+    modifier: Modifier,
+    name: String,
+    contentScale: ContentScale = ContentScale.Fit
+) {
     if (uri == null) {
         Box(
             modifier = modifier,
@@ -40,7 +45,7 @@ fun AvatarPlaceholder(uri: Uri?, modifier: Modifier, name: String) {
                 .crossfade(true)
                 .build(),
             contentDescription = "Avatar",
-            contentScale = ContentScale.Fit,
+            contentScale = contentScale,
             modifier = modifier,
             placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
         )

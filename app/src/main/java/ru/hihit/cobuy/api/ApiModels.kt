@@ -1,15 +1,18 @@
 package ru.hihit.cobuy.api
 
+import android.net.Uri
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.models.ProductStatusSerializer
+import ru.hihit.cobuy.utils.UriSerializer
 
 @Serializable
 data class GroupData(
     val id: Int = 0,
     var name: String = "",
-    var avaUrl: String?,
+    @Serializable(with = UriSerializer::class)
+    var avaUrl: Uri?,
     var inviteLink: String?,
     @SerialName(value = "owner")
     val ownerId: Int = 0,
@@ -42,5 +45,23 @@ data class ProductData(
     @Serializable(with = ProductStatusSerializer::class)
     var status: ProductStatus = ProductStatus.NONE,
     @SerialName(value = "shoppingListId")
-    val listId: Int = 0
+    val listId: Int = 0,
+    @Serializable(with = UriSerializer::class)
+    val productImgUrl: Uri? = null,
+    val price: Int? = 0,
+    @SerialName(value = "buyer")
+    val buyerId: Int? = 0,
+
+)
+
+@Serializable
+data class GroupImageData(
+    @Serializable(with = UriSerializer::class)
+    val avaUrl: Uri?
+)
+
+@Serializable
+data class ProductImageData(
+    @Serializable(with = UriSerializer::class)
+    val productImgUrl: Uri?
 )

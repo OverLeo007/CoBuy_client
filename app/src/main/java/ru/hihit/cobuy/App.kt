@@ -23,6 +23,7 @@ class App : Application() {
     private val json = Json {
         coerceInputValues = true
         explicitNulls = false
+        ignoreUnknownKeys = true
     }
 
     override fun onCreate() {

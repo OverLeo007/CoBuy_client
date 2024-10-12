@@ -3,6 +3,7 @@ package ru.hihit.cobuy.api
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.api.auth.AuthApiService
 import ru.hihit.cobuy.api.groups.GroupsApiService
+import ru.hihit.cobuy.api.images.ImagesApiService
 import ru.hihit.cobuy.api.lists.ListsApiService
 import ru.hihit.cobuy.api.misc.MiscApiService
 import ru.hihit.cobuy.api.products.ProductsApiService
@@ -27,6 +28,10 @@ object Api {
 
     val misc: MiscApiService by lazy {
         App.getRetrofit().create(MiscApiService::class.java)
+    }
+
+    val images: ImagesApiService by lazy {
+        App.getRetrofit().create(ImagesApiService::class.java)
     }
 
 }

@@ -19,6 +19,7 @@ import ru.hihit.cobuy.models.Group
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.isJwt
 import ru.hihit.cobuy.utils.parseJson
+import ru.hihit.cobuy.utils.toUri
 
 class GroupsViewModel : ViewModel() {
 
@@ -138,8 +139,14 @@ class GroupsViewModel : ViewModel() {
         GroupRequester.getGroups(
             callback = { response ->
                 response?.data?.let { newGroups ->
-                    groups.value = newGroups
-                    onGroupsGet(newGroups)
+                    val updGroups = newGroups.map {groupData ->
+                        groupData.avaUrl?.let {
+                            groupData.avaUrl = groupData.avaUrl.toString().replace("public", "http://hihit.sytes.net/storage").toUri()  //FIXME remove this map
+                        }
+                        groupData
+                    }
+                    groups.value = updGroups
+                    onGroupsGet(updGroups)
                 }
                 isLoading.value = false
             },
