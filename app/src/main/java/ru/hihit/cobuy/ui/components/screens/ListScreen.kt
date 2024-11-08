@@ -21,16 +21,23 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -159,7 +167,11 @@ fun ListScreen(
 
 }
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalComposeUiApi::class,
+    ExperimentalMaterial3Api::class
+)
 @Preview
 @Composable
 fun ProductItem(
@@ -210,137 +222,183 @@ fun ProductItem(
             )
     }
 
-    Card(
-        Modifier
-            .height(200.dp)
-            .padding(PaddingValues(bottom = 8.dp)),
-        colors = CardDefaults.cardColors()
-            .copy(containerColor = MaterialTheme.colorScheme.primaryContainer),
-        shape = RoundedCornerShape(24.dp),
-    ) {
-        Row(
-            Modifier.combinedClickable(onClick = { openModal.value = true }, onLongClick = { })
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete(product)
+            }
+            true
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = false,
+        backgroundContent = {
+        val color = when (dismissState.dismissDirection) {
+            SwipeToDismissBoxValue.StartToEnd -> Color.Transparent
+            SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
+            else -> Color.Transparent
+        }
+
+        Card(
+            modifier = Modifier
+                .height(200.dp)
+                .padding(PaddingValues(bottom = 8.dp)),
+            colors = CardDefaults.cardColors().copy(
+                containerColor = Color.Transparent
+            ),
+            shape = RoundedCornerShape(24.dp),
+
         ) {
             Box(
                 modifier = Modifier
-                    .weight(0.1f)
-                    .background(getColorByHash(product.name))
-                    .fillMaxHeight()
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(8.dp)
             ) {
-                Text("")
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                )
             }
-            Box(
-                modifier = Modifier
-                    .weight(0.9f)
-                    .fillMaxHeight()
-                    .padding(PaddingValues(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp))
+        }
+    }) {
+        Card(
+            Modifier
+                .height(200.dp)
+                .padding(PaddingValues(bottom = 8.dp)),
+            colors = CardDefaults.cardColors()
+                .copy(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            shape = RoundedCornerShape(24.dp),
+        ) {
+            Row(
+                Modifier.combinedClickable(onClick = { openModal.value = true }, onLongClick = { })
             ) {
-                Column(
+                Box(
                     modifier = Modifier
-
+                        .weight(0.1f)
+                        .background(getColorByHash(product.name))
+                        .fillMaxHeight()
                 ) {
-                    Text(product.name, style = MaterialTheme.typography.titleLarge)
-                    HorizontalDivider(
-                        modifier = Modifier.fillMaxWidth(0.3F),
-                        color = MaterialTheme.colorScheme.surfaceTint
-                    )
-                    Text(
-                        product.description,
-                        maxLines = 3,
-                        style = MaterialTheme.typography.bodyMedium,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
+                    Text("")
                 }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
+                        .weight(0.9f)
+                        .fillMaxHeight()
+                        .padding(PaddingValues(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp))
                 ) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(0.5F),
-                        text = product.price.toString() + "₽", //FIXME Валюту надо выбирать в настройках
-                        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 24.sp)
-                    )
+                    Column(
+                        modifier = Modifier
 
-                    val context = LocalContext.current
-                    if (product.buyer == null || context.getFromPreferences(
-                            "user_id",
-                            -1
-                        ) == product.buyer.id
                     ) {
-                        Column {
-                            val buyButtonColor =
-                                if (isBought) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
-                            val planButtonColor =
-                                if (isPlanned) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
-                            Button(
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    product.status =
-                                        if (product.status == ProductStatus.BOUGHT) ProductStatus.NONE else ProductStatus.BOUGHT
-                                    onStatusChanged(product)
-                                    statusChanged.value = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = buyButtonColor),
-                                border = if (isBought) null else BorderStroke(
-                                    1.dp,
-                                    color = MaterialTheme.colorScheme.surfaceTint
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(
-                                    start = 12.dp,
-                                    end = 12.dp,
-                                    top = 1.dp,
-                                    bottom = 1.dp
-                                )
-                            ) {
-                                Text(
-                                    if (isBought) stringResource(id = R.string.bought_word)
-                                    else stringResource(
-                                        id = R.string.buy_word
-                                    )
-                                )
-                            }
-                            Button(
-//                            modifier = Modifier.padding(PaddingValues(end = 8.dp)),
-                                modifier = Modifier.fillMaxWidth(),
-                                onClick = {
-                                    product.status =
-                                        if (product.status == ProductStatus.PLANNED) ProductStatus.NONE else ProductStatus.PLANNED
-                                    onStatusChanged(product)
-                                    statusChanged.value = true
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = planButtonColor),
-                                border = if (isPlanned) null else BorderStroke(
-                                    1.dp,
-                                    color = MaterialTheme.colorScheme.surfaceTint
-                                ),
-                                shape = RoundedCornerShape(8.dp),
-                                contentPadding = PaddingValues(
-                                    start = 12.dp,
-                                    end = 12.dp,
-                                    top = 1.dp,
-                                    bottom = 1.dp
-                                )
-                            ) {
-                                Text(
-                                    if (isPlanned) stringResource(id = R.string.planned_word)
-                                    else stringResource(
-                                        id = R.string.plan_word
-                                    )
-                                )
-                            }
-                        }
-                    } else {
-                        val statusWord = if (product.status == ProductStatus.BOUGHT) stringResource(id = R.string.bought_by_word)
-                        else stringResource(id = R.string.planned_by_word)
-                        Text(
-                            text = statusWord + product.buyer.name,
-                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp)
+                        Text(product.name, style = MaterialTheme.typography.titleLarge)
+                        HorizontalDivider(
+                            modifier = Modifier.fillMaxWidth(0.3F),
+                            color = MaterialTheme.colorScheme.surfaceTint
                         )
+                        Text(
+                            product.description,
+                            maxLines = 3,
+                            style = MaterialTheme.typography.bodyMedium,
+                            overflow = TextOverflow.Ellipsis
+                        )
+
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                    ) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(0.5F),
+                            text = product.price.toString() + "₽", //FIXME Валюту надо выбирать в настройках
+                            style = MaterialTheme.typography.bodyLarge.copy(fontSize = 24.sp)
+                        )
+
+                        val context = LocalContext.current
+                        if (product.buyer == null || context.getFromPreferences(
+                                "user_id",
+                                -1
+                            ) == product.buyer.id
+                        ) {
+                            Column {
+                                val buyButtonColor =
+                                    if (isBought) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
+                                val planButtonColor =
+                                    if (isPlanned) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
+                                Button(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = {
+                                        product.status =
+                                            if (product.status == ProductStatus.BOUGHT) ProductStatus.NONE else ProductStatus.BOUGHT
+                                        onStatusChanged(product)
+                                        statusChanged.value = true
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = buyButtonColor),
+                                    border = if (isBought) null else BorderStroke(
+                                        1.dp,
+                                        color = MaterialTheme.colorScheme.surfaceTint
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(
+                                        start = 12.dp,
+                                        end = 12.dp,
+                                        top = 1.dp,
+                                        bottom = 1.dp
+                                    )
+                                ) {
+                                    Text(
+                                        if (isBought) stringResource(id = R.string.bought_word)
+                                        else stringResource(
+                                            id = R.string.buy_word
+                                        )
+                                    )
+                                }
+                                Button(
+//                            modifier = Modifier.padding(PaddingValues(end = 8.dp)),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = {
+                                        product.status =
+                                            if (product.status == ProductStatus.PLANNED) ProductStatus.NONE else ProductStatus.PLANNED
+                                        onStatusChanged(product)
+                                        statusChanged.value = true
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = planButtonColor),
+                                    border = if (isPlanned) null else BorderStroke(
+                                        1.dp,
+                                        color = MaterialTheme.colorScheme.surfaceTint
+                                    ),
+                                    shape = RoundedCornerShape(8.dp),
+                                    contentPadding = PaddingValues(
+                                        start = 12.dp,
+                                        end = 12.dp,
+                                        top = 1.dp,
+                                        bottom = 1.dp
+                                    )
+                                ) {
+                                    Text(
+                                        if (isPlanned) stringResource(id = R.string.planned_word)
+                                        else stringResource(
+                                            id = R.string.plan_word
+                                        )
+                                    )
+                                }
+                            }
+                        } else {
+                            val statusWord =
+                                if (product.status == ProductStatus.BOUGHT) stringResource(id = R.string.bought_by_word)
+                                else stringResource(id = R.string.planned_by_word)
+                            Text(
+                                text = statusWord + product.buyer.name,
+                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp)
+                            )
+                        }
                     }
                 }
             }
