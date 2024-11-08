@@ -1,6 +1,7 @@
 package ru.hihit.cobuy
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -18,6 +19,7 @@ import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.screens.MainScreen
 import ru.hihit.cobuy.ui.theme.CoBuyTheme
 import ru.hihit.cobuy.utils.getFromPreferences
+import ru.hihit.cobuy.utils.removeFromPreferences
 
 
 @ExperimentalPermissionsApi
@@ -31,6 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val context = App.getContext()
         var startDestination: String = Route.Authorization
+        var navigateTo: String = Route.Groups
         if (context.getFromPreferences("auth_token", "") == "") {
             setContent {
                 CoBuyTheme {
@@ -54,11 +57,19 @@ class MainActivity : ComponentActivity() {
                                 "user_email",
                                 ""
                             ) == response.userData.email
-                        ) startDestination = Route.Groups
+                        ) {
+                            val lastRoute = context.getFromPreferences("last_route", Route.Groups)
+                            navigateTo = if (lastRoute.contains(Regex("\\{.*?\\}")) || lastRoute.contains(Route.Dummy)) {
+                                context.removeFromPreferences("last_route")
+                                Route.Groups
+                            } else lastRoute
+                            Log.d("MainActivity", "start_from: $navigateTo")
+                            startDestination = Route.Groups
+                        }
                     }
                     setContent {
                         CoBuyTheme {
-                            MainScreen(startDestination)
+                            MainScreen(startDestination, navigateTo)
                         }
                     }
                 },

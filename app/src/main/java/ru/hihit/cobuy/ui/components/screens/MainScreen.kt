@@ -19,7 +19,8 @@ import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
 
 @Composable
 fun MainScreen(
-    startDestination: String = Route.Authorization
+    startDestination: String = Route.Authorization,
+    navigateTo: String = Route.Groups
 ) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -34,6 +35,6 @@ fun MainScreen(
 
 
     Surface(color = MaterialTheme.colorScheme.background) {
-        NavGraph(navHostController = navController, vms = vms, startDestination = startDestination)
+        NavGraph(navHostController = navController, vms = vms, startDestination = startDestination, navigateTo = navigateTo)
     }
 }

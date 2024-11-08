@@ -43,5 +43,7 @@
     <string name="invalid_token">Некорректный токен приглашения</string>
     <string name="share_qr_text">Сканируйте этот QR-код в приложении CoBuy, чтобы присоединиться к группе %1$s!</string>
     <string name="leave_word">Выйти</string>
+    <string name="bought_by_word">"Куплено "</string>
+    <string name="planned_by_word">"Запланировано "</string>
 
 </resources>

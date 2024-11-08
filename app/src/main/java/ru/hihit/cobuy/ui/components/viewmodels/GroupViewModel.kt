@@ -48,12 +48,12 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
 
 
     private fun subscribeToGroup() {
-        pusherService.subscribeToChannel(
-            channelName = "group-changed.$groupId",
-            eventName = "group-changed",
-            onEvent = { onWsEvent(it) },
-            onError = { message, e -> onWsError(message, e) }
-        )
+//        pusherService.subscribeToChannel(
+//            channelName = "group-changed.$groupId",
+//            eventName = "group-changed",
+//            onEvent = { onWsEvent(it) },
+//            onError = { message, e -> onWsError(message, e) }
+//        )
     }
 
 

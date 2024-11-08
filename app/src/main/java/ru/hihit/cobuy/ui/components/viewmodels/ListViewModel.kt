@@ -1,5 +1,6 @@
 package ru.hihit.cobuy.ui.components.viewmodels
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -7,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import okhttp3.MultipartBody
+import ru.hihit.cobuy.api.ImageRequester
 import ru.hihit.cobuy.api.ListData
 import ru.hihit.cobuy.api.ListRequester
 import ru.hihit.cobuy.api.ProductData
@@ -14,6 +17,7 @@ import ru.hihit.cobuy.api.ProductRequester
 import ru.hihit.cobuy.api.lists.UpdateListRequest
 import ru.hihit.cobuy.api.products.CreateProductRequest
 import ru.hihit.cobuy.api.products.UpdateProductRequest
+import ru.hihit.cobuy.utils.getMultipartImageFromUri
 
 class ListViewModel(private val listId: Int) : ViewModel() {
     var products: MutableStateFlow<List<ProductData>> = MutableStateFlow(emptyList())
@@ -39,12 +43,19 @@ class ListViewModel(private val listId: Int) : ViewModel() {
         Log.d("ListViewModel", "onNameChanged: $newName")
     }
 
-    fun onProductAdded(product: ProductData) {
+    fun onProductAdded(context: Context, product: ProductData) {
         ProductRequester.createProduct(listId,
-            CreateProductRequest(product.name, product.description),
+            CreateProductRequest(
+                product.name,
+                product.description,
+                product.price,
+                product.quantity
+            ),
             callback = { response ->
                 response?.data?.let {
+                    onUploadImage(context, it)
                     val curProducts = products.value.toMutableList()
+
                     curProducts.add(it)
                     products.value = curProducts
                 }
@@ -94,15 +105,34 @@ class ListViewModel(private val listId: Int) : ViewModel() {
             it.description = product.description
         }
         ProductRequester.updateProduct(listId, product.id,
-            UpdateProductRequest(product.name, product.description, product.status),
+            UpdateProductRequest(product.name, product.description, product.status, price = product.price, count = product.quantity),
             callback = { response ->
-                Log.d("ListViewModel", "onProductDeleted: $response")
+                Log.d("ListViewModel", "onProductEdited: $response")
+                updateAll()
             },
             onError = { code, body ->
-                Log.e("ListViewModel", "onProductDeleted: $code $body")
+                Log.e("ListViewModel", "onProductEdited: $code $body")
             }
         )
         Log.d("ListViewModel", "onProductEdited: $product")
+    }
+
+    fun onUploadImage(context: Context, product: ProductData) {
+        var image: MultipartBody.Part? = null
+        product.productImgUrl?.let {
+            image = context.getMultipartImageFromUri(it)
+        }
+
+        image?.let {
+            ImageRequester.uploadProductImage(product.listId, product.id, it,
+                callback = { response ->
+                    Log.d("ListViewModel", "onUploadImage: $response")
+                },
+                onError = { code, body ->
+                    Log.e("ListViewModel", "onUploadImage: $code $body")
+                }
+            )
+        }
     }
 
 

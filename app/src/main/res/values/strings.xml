@@ -44,5 +44,7 @@
     <string name="invalid_token">Invalid invitation token</string>
     <string name="share_qr_text">Scan this QR code in your CoBuy app to join %1$s group!</string>
     <string name="leave_word">Leave</string>
+    <string name="bought_by_word">Bought by </string>
+    <string name="planned_by_word">Planned by </string>
 
 </resources>

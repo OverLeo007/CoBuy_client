@@ -56,6 +56,7 @@ android {
 
 val cameraxVersion = "1.0.2"
 dependencies {
+    implementation("net.engawapg.lib:zoomable:1.6.2")
     implementation("com.pusher:pusher-java-client:2.4.2")
     implementation("androidx.compose.runtime:runtime:1.6.8")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.8")

@@ -45,8 +45,8 @@ fun AuthScreen(
     vm: AuthViewModel
 ) {
     val context = LocalContext.current
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("qwe@qwe.qwe") }
+    var password by remember { mutableStateOf("qweqweqwe") }
     var passwordVisible by remember { mutableStateOf(false) }
     var login by remember { mutableStateOf("") }
     var isRegistering by remember { mutableStateOf(false) }

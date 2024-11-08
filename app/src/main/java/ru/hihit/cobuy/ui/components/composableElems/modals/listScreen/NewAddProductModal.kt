@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,7 +41,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -57,7 +55,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.text.isDigitsOnly
@@ -66,34 +63,26 @@ import ru.hihit.cobuy.api.ProductData
 import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 
 @OptIn(ExperimentalMaterial3Api::class)
-@ExperimentalComposeUiApi
 @Composable
-@Preview
-fun NewProductModal(
-    product: ProductData = ProductData(),
+fun NewAddProductModal(
     onSubmit: (ProductData) -> Unit = {},
     onDismiss: () -> Unit = {},
-    onImageSelected: (ProductData) -> Unit = {},
-    namePlaceholder: String = stringResource(R.string.product_name),
-    descriptionPlaceholder: String = stringResource(R.string.product_description)
 ) {
+
+    val product = ProductData()
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-
-    var isNameCorrect by remember { mutableStateOf(true) }
-
-    var nameText by remember { mutableStateOf(if (product.name == "") namePlaceholder else product.name) }
+    var nameText by remember { mutableStateOf("") }
     var isNameEditing by remember { mutableStateOf(false) }
 
-    var descriptionText by remember { mutableStateOf(if (product.description == "") descriptionPlaceholder else product.description) }
+    var descriptionText by remember { mutableStateOf("") }
 
-    var quantity by remember { mutableIntStateOf(product.quantity ?: 0) } // TODO: product.quantity
+    var quantity by remember { mutableIntStateOf(0) }
 
     var price by remember { mutableIntStateOf(product.price ?: 0) }
 
-    var isImageFullScreen by remember { mutableStateOf(false) }
 
     var imageUri by remember { mutableStateOf(product.productImgUrl) }
     val launcher =
@@ -103,18 +92,11 @@ fun NewProductModal(
             }
         }
 
-    when {
-        !isNameEditing -> {
-            HideKeyboardFrom()
-        }
-    }
-
 
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-//                .heightIn(min = LocalConfiguration.current.screenHeightDp.dp * 0.8F),
                 .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.8F),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
@@ -156,7 +138,8 @@ fun NewProductModal(
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                         unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
-                                    )
+                                    ),
+                                    placeholder = { Text(stringResource(id = R.string.product_name)) },
                                 )
                             }
                         },
@@ -197,20 +180,15 @@ fun NewProductModal(
                                     onTap = {
                                         launcher.launch("image/*")
                                     },
-                                    onLongPress = {
-                                        isImageFullScreen = true
-                                    }
                                 )
                             },
-                        name = nameText,
+                        name = if (nameText == "") "Click to put the image of product" else nameText, // TODO: Добавить возможность добавлять фото с камеры
                         contentScale = ContentScale.Crop,
-                        isFullScreen = isImageFullScreen,
-                        onFullScreenChange = { isImageFullScreen = it }
                     )
                     TextField(
                         value = descriptionText,
                         onValueChange = { descriptionText = it },
-                        label = { Text("Описание") },
+                        label = { Text(stringResource(id = R.string.product_description)) },
                         maxLines = 5,
                         minLines = 5,
                         modifier = Modifier
@@ -286,15 +264,11 @@ fun NewProductModal(
                     }
                     Button(
                         onClick = {
-                            if (imageUri != product.productImgUrl) {
-                                onImageSelected(
-                                    product.copy(productImgUrl = imageUri)
-                                )
-                            }
                             onSubmit(
                                 product.copy(
                                     name = nameText,
                                     description = descriptionText,
+                                    productImgUrl = imageUri,
                                     quantity = quantity,
                                     price = price,
                                 )
@@ -304,7 +278,7 @@ fun NewProductModal(
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {
-                        Text("Подтвердить") //TODD: Add submit string
+                        Text("Добавить")
                     }
                 }
             }
@@ -314,10 +288,3 @@ fun NewProductModal(
 }
 
 
-@Composable
-fun HideKeyboardFrom() {
-    val context = LocalContext.current
-    val view = LocalView.current
-    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.hideSoftInputFromWindow(view.windowToken, 0)
-}

@@ -1,17 +1,29 @@
 package ru.hihit.cobuy.ui.components.navigation
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import ru.hihit.cobuy.App
 import ru.hihit.cobuy.api.GroupRequester
 import ru.hihit.cobuy.ui.components.screens.AuthScreen
 import ru.hihit.cobuy.ui.components.screens.GroupScreen
@@ -24,21 +36,62 @@ import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
+import ru.hihit.cobuy.utils.saveToPreferences
 
 
 @Composable
 fun NavGraph(
     navHostController: NavHostController,
     vms: HashMap<String, ViewModel>,
-    startDestination: String
+    startDestination: String,
+    navigateTo: String
 ) {
+
+    navHostController.addOnDestinationChangedListener { _, dest, arguments ->
+        val context = App.getContext()
+        val route = dest.route ?: Route.Groups
+        if (route == Route.Dummy) {
+            context.saveToPreferences("last_route", Route.Groups)
+        }
+        val fullRoute = if (arguments != null) {
+            var tempRoute = route
+            arguments.keySet().forEach { key ->
+                tempRoute = tempRoute.replace("{$key}", arguments.getString(key) ?: "")
+            }
+            tempRoute
+        } else {
+            route
+        }
+        context.saveToPreferences("last_route", fullRoute)
+        Log.d("NavGraph", "new last_route saved: $fullRoute")
+    }
+
+    var isLoaded by remember { mutableStateOf(false)}
+
+    LaunchedEffect(isLoaded) {
+        navHostController.popBackStack()
+        navHostController.navigate(Route.Groups) {
+            launchSingleTop = false
+            restoreState = true
+        }
+        if (isLoaded) {
+            if (navigateTo != Route.Groups) {
+                navHostController.navigate(route = navigateTo)
+            } else {
+                navHostController.navigate(route = startDestination)
+            }
+
+        }
+    }
+
+
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
     val density = LocalDensity.current
     val screenWidthPx = with(density) { screenWidthDp.toPx().toInt() }
     val duration = 300
     NavHost(
         navController = navHostController,
-        startDestination = startDestination,
+        startDestination = Route.Dummy,
         enterTransition = {
             slideInHorizontally(initialOffsetX = { screenWidthPx }, animationSpec = tween(duration))
         },
@@ -53,6 +106,13 @@ fun NavGraph(
         },
     ) {
 
+        composable(Route.Dummy) {
+            Box(
+                modifier =  Modifier.onGloballyPositioned {
+                    isLoaded = true
+                }
+            ) {}
+        }
 
         composable(Route.Groups) {
             val vm: GroupsViewModel = viewModel(key = Route.Groups)
