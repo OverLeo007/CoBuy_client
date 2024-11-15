@@ -1,5 +1,7 @@
 package ru.hihit.cobuy.ui.components.composableElems
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
@@ -21,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.common.InputImage
 import ru.hihit.cobuy.utils.BarCodeAnalyser
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -90,4 +94,27 @@ fun CameraScanner(
             }, ContextCompat.getMainExecutor(context))
         }
     )
+}
+
+
+fun imageScanner(
+    context: Context,
+    imageUri: Uri,
+    onScanned: (String) -> Unit = {},
+    onFailed: (String) -> Unit = {}
+) {
+    val image = InputImage.fromFilePath(context, imageUri)
+    val scanner = BarcodeScanning.getClient()
+
+    scanner.process(image)
+        .addOnSuccessListener { barcodes ->
+            for (barcode in barcodes) {
+                val rawValue = barcode.rawValue
+                rawValue?.let { onScanned(it) }
+            }
+        }
+        .addOnFailureListener { e ->
+            e.message?.let { onFailed(it) }
+        }
+
 }

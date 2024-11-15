@@ -24,7 +24,7 @@ import ru.hihit.cobuy.utils.toUri
 class GroupsViewModel : ViewModel() {
 
     var isLoading = MutableLiveData(false)
-    var scanError: String by mutableStateOf("")
+    var scanError: String by mutableStateOf("ASDASDASDA")
 
     val groups: MutableStateFlow<List<GroupData>> = MutableStateFlow(emptyList())
 
@@ -119,11 +119,14 @@ class GroupsViewModel : ViewModel() {
                 body?.let {
                     parseJson(it.string())
                 }?.let {
+                    Log.d("GroupsViewModel", "Error: $code body: $it")
                     if (it.containsKey("error")) {
+                        Log.d("GroupsViewModel", "Body is contain error")
                         val error = it["error"] as String
                         scanError = error
                     }
                     if (it.containsKey("message")) {
+                        Log.d("GroupsViewModel", "Body is contain message")
                         val error = it["message"] as String
                         scanError = error
                     }
