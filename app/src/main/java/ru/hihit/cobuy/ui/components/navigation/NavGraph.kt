@@ -18,13 +18,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.NavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import ru.hihit.cobuy.App
-import ru.hihit.cobuy.api.GroupRequester
 import ru.hihit.cobuy.ui.components.screens.AuthScreen
 import ru.hihit.cobuy.ui.components.screens.GroupScreen
 import ru.hihit.cobuy.ui.components.screens.GroupsScreen
@@ -36,6 +33,7 @@ import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
+import ru.hihit.cobuy.utils.extractAllByRegex
 import ru.hihit.cobuy.utils.saveToPreferences
 
 
@@ -48,27 +46,52 @@ fun NavGraph(
 ) {
 
     navHostController.addOnDestinationChangedListener { _, dest, arguments ->
-        val context = App.getContext()
-        val route = dest.route ?: Route.Groups
-        if (route == Route.Dummy) {
-            context.saveToPreferences("last_route", Route.Groups)
-        }
-        val fullRoute = if (arguments != null) {
+        var resRoute: String? = null
+        dest.route?.let { route ->
             var tempRoute = route
-            arguments.keySet().forEach { key ->
-                tempRoute = tempRoute.replace("{$key}", arguments.getString(key) ?: "")
+            val argsInDest = route.extractAllByRegex( "\\{([^}]*)\\}")
+            if (argsInDest.isNotEmpty()) {
+                arguments?.let {
+                    argsInDest.forEach { arg ->
+                        arguments.getString(arg)?.let {
+                            tempRoute = route.replace("{$arg}", it)
+                        }
+                    }
+                }
             }
-            tempRoute
-        } else {
-            route
+            resRoute = tempRoute
         }
-        context.saveToPreferences("last_route", fullRoute)
-        Log.d("NavGraph", "new last_route saved: $fullRoute")
+        Log.d("NavGraph", "destination changed: $resRoute")
+        val context = App.getContext()
+        resRoute?.let {
+            if (resRoute != Route.Dummy) {
+                context.saveToPreferences("last_route", it)
+            } else {
+                context.saveToPreferences("last_route", Route.Groups)
+
+            }
+        }
+//        val route = dest.route ?: Route.Groups
+//        if (route == Route.Dummy) {
+//            context.saveToPreferences("last_route", Route.Groups)
+//        }
+//        val fullRoute = if (arguments != null) {
+//            var tempRoute = route
+//            arguments.keySet().forEach { key ->
+//                tempRoute = tempRoute.replace("{$key}", arguments.getString(key) ?: "")
+//            }
+//            tempRoute
+//        } else {
+//            route
+//        }
+//        context.saveToPreferences("last_route", fullRoute)
+//        Log.d("NavGraph", "new last_route saved: $fullRoute")
     }
 
     var isLoaded by remember { mutableStateOf(false)}
 
     LaunchedEffect(isLoaded) {
+        Log.d("NavGraph", "NavigateToAfterLoad dummy: $navigateTo")
         navHostController.popBackStack()
         navHostController.navigate(Route.Groups) {
             launchSingleTop = false

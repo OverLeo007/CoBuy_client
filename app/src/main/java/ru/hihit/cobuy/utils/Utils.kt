@@ -96,3 +96,8 @@ fun Context.getBitmapFromUri(uri: Uri): Bitmap? {
         null
     }
 }
+
+
+fun String.extractAllByRegex(regex: String): List<String> {
+    return regex.toRegex().findAll(this).map { it.groups[1]?.value.orEmpty() }.toList()
+}
