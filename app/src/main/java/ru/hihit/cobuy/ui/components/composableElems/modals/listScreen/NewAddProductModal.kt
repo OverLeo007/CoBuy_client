@@ -2,11 +2,24 @@ package ru.hihit.cobuy.ui.components.composableElems.modals.listScreen
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +27,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,10 +36,12 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -34,8 +50,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,10 +76,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.FileProvider
 import androidx.core.text.isDigitsOnly
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.ProductData
 import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,19 +90,21 @@ fun NewAddProductModal(
     onDismiss: () -> Unit = {},
 ) {
 
+    val context = LocalContext.current
+
     val product = ProductData()
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    var nameText by remember { mutableStateOf("") }
+    var nameText by remember { mutableStateOf("test") }
     var isNameEditing by remember { mutableStateOf(false) }
 
-    var descriptionText by remember { mutableStateOf("") }
+    var descriptionText by remember { mutableStateOf("test") }
 
-    var quantity by remember { mutableIntStateOf(0) }
+    var quantity by remember { mutableIntStateOf(10) }
 
-    var price by remember { mutableIntStateOf(product.price ?: 0) }
+    var price by remember { mutableIntStateOf(10) }
 
 
     var imageUri by remember { mutableStateOf(product.productImgUrl) }
@@ -91,6 +114,41 @@ fun NewAddProductModal(
                 imageUri = it
             }
         }
+
+
+    val tempImageUri = remember {
+        mutableStateOf(
+            FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+            )
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        tempImageUri.value = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.provider",
+            File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+        )
+    }
+
+    val imageUpdatingKey = remember { mutableIntStateOf(0) }
+    val cameraLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture()) {success ->
+        if (success) {
+            imageUri = tempImageUri.value
+            Log.d("ProductModal", "Image Loaded success: $imageUri from ${tempImageUri.value}")
+            imageUpdatingKey.intValue++
+        }
+    }
+
+    var isPhotoButtonsVisible by remember { mutableStateOf(false) }
+    val animDuration = 150
+
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
+
 
 
     Dialog(onDismissRequest = onDismiss) {
@@ -170,21 +228,127 @@ fun NewAddProductModal(
                             }
                         }
                     )
-                    ImagePlaceholder(
-                        uri = imageUri,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(0.3F)
-                            .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onTap = {
+                    key(imageUpdatingKey) {
+                        ImagePlaceholder(
+                            uri = imageUri,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(screenHeight * 0.8F * 0.25F)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(
+                                        onTap = {
+                                            isPhotoButtonsVisible = !isPhotoButtonsVisible
+                                        },
+                                    )
+                                },
+                            name = if (nameText == "") "Click to put the image of product" else nameText,
+                            isFullText = nameText == "",
+                            contentScale = ContentScale.Crop,
+                        )
+                    }
+                    AnimatedVisibility(
+                        visible = isPhotoButtonsVisible,
+                        enter = slideInVertically(
+                            initialOffsetY = { -it },
+                            animationSpec = tween(durationMillis = animDuration)
+                        ) + expandVertically(
+                            expandFrom = Alignment.Top
+                        ) + fadeIn(
+                            initialAlpha = 0.3f
+                        ),
+                        exit = slideOutVertically(
+                            targetOffsetY = { -it },
+                            animationSpec = tween(durationMillis = animDuration)
+                        ) + shrinkVertically() + fadeOut()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .heightIn(max = 50.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .weight(1F)
+                                    .fillMaxHeight()
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = rememberRipple(bounded = true)
+                                    ) {
+                                        tempImageUri.value = FileProvider.getUriForFile(
+                                            context,
+                                            "${context.packageName}.provider",
+                                            File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+                                        )
+                                        cameraLauncher.launch(tempImageUri.value)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        painterResource(id = R.drawable.photo_camera_24dp),
+                                        modifier = Modifier.padding(end = 8.dp),
+                                        contentDescription = "camera icon"
+                                    )
+                                    Text(
+                                        text = "Сделать фото",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                            AnimatedVisibility(
+                                visible = isPhotoButtonsVisible,
+                                enter = scaleIn(animationSpec = tween(durationMillis = animDuration)),
+                                exit = scaleOut(animationSpec = tween(durationMillis = animDuration))
+
+                            ) {
+                                VerticalDivider(
+                                    color = MaterialTheme.colorScheme.surfaceTint
+                                )
+                            }
+                            Row(
+                                modifier = Modifier
+                                    .weight(1F)
+                                    .fillMaxHeight()
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = rememberRipple(bounded = true)
+                                    ) {
                                         launcher.launch("image/*")
                                     },
-                                )
-                            },
-                        name = if (nameText == "") "Click to put the image of product" else nameText, // TODO: Добавить возможность добавлять фото с камеры
-                        contentScale = ContentScale.Crop,
-                    )
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(10.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.padding(end = 8.dp),
+                                        painter = painterResource(id = R.drawable.photo_library_24dp),
+                                        contentDescription = "photo library icon"
+                                    )
+                                    Text(
+                                        text = "Выбрать из галереи",
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    AnimatedVisibility(
+                        visible = isPhotoButtonsVisible,
+                        enter = scaleIn(animationSpec = tween(durationMillis = animDuration)),
+                        exit = scaleOut(animationSpec = tween(durationMillis = animDuration))
+
+                    ) {
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.surfaceTint
+                        )
+                    }
                     TextField(
                         value = descriptionText,
                         onValueChange = { descriptionText = it },
@@ -192,6 +356,7 @@ fun NewAddProductModal(
                         maxLines = 5,
                         minLines = 5,
                         modifier = Modifier
+                            .animateContentSize()
                             .fillMaxWidth()
                             .clickable {
                                 focusManager.clearFocus()
@@ -264,6 +429,7 @@ fun NewAddProductModal(
                     }
                     Button(
                         onClick = {
+                            Log.d("ProductModal", "Submit button clicked, photo: $imageUri")
                             onSubmit(
                                 product.copy(
                                     name = nameText,
@@ -278,7 +444,7 @@ fun NewAddProductModal(
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {
-                        Text("Добавить")
+                        Text(stringResource(R.string.submit_word))
                     }
                 }
             }

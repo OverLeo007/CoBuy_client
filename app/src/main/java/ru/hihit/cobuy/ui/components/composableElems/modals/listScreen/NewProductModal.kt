@@ -149,7 +149,6 @@ fun NewProductModal(
             Log.d("ProductModal", "Image Loaded success: $imageUri from ${tempImageUri.value}")
             imageUpdatingKey.intValue++
         }
-
     }
 
 
@@ -468,7 +467,7 @@ fun NewProductModal(
                             .fillMaxWidth()
                             .padding(10.dp)
                     ) {
-                        Text("Подтвердить") //TODD: Add submit string
+                        Text(stringResource(R.string.submit_word))
                     }
                 }
             }

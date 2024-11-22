@@ -47,7 +47,7 @@ data class ProductData(
     @SerialName(value = "shoppingListId")
     val listId: Int = 0,
     @Serializable(with = UriSerializer::class)
-    val productImgUrl: Uri? = null,
+    var productImgUrl: Uri? = null,
     val price: Int? = 0,
     @SerialName(value = "count")
     val quantity: Int? = 0,

@@ -53,11 +53,12 @@ class ListViewModel(private val listId: Int) : ViewModel() {
             ),
             callback = { response ->
                 response?.data?.let {
-                    onUploadImage(context, it)
                     val curProducts = products.value.toMutableList()
-
+                    it.productImgUrl = product.productImgUrl
                     curProducts.add(it)
                     products.value = curProducts
+
+                    onUploadImage(context, it)
                 }
                 Log.d("ListViewModel", "onProductAdded: $response")
             },
@@ -65,7 +66,7 @@ class ListViewModel(private val listId: Int) : ViewModel() {
                 Log.e("ListViewModel", "onProductAdded: $code $body")
             }
         )
-        Log.d("ListViewModel", "onProductAdded: $product")
+//        Log.d("ListViewModel", "onProductAdded: $product")
 
     }
 
@@ -118,6 +119,7 @@ class ListViewModel(private val listId: Int) : ViewModel() {
     }
 
     fun onUploadImage(context: Context, product: ProductData) {
+        Log.d("ListViewModel", "Uploading image: $product")
         var image: MultipartBody.Part? = null
         product.productImgUrl?.let {
             image = context.getMultipartImageFromUri(it)

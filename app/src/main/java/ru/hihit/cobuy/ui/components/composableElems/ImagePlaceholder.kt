@@ -1,6 +1,9 @@
 package ru.hihit.cobuy.ui.components.composableElems
 
 import android.net.Uri
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
@@ -42,17 +45,21 @@ fun ImagePlaceholder(
 
 
     if (uri == null) {
+        val targetColor = getColorByHash(name)
+        val animatedColor by animateColorAsState(targetValue = targetColor,
+            label = "placeholder color animation")
         Box(
             modifier = modifier,
             contentAlignment = Alignment.Center
         ) {
             Canvas(modifier = Modifier.matchParentSize()) {
-                drawRect(color = getColorByHash(name))
+                drawRect(color = animatedColor)
             }
             Text(
                 text = if (isFullText) name else name.first().uppercase(),
-                style = MaterialTheme.typography.titleLarge,
-                color = Color.White
+                style = if (isFullText) MaterialTheme.typography.bodySmall else MaterialTheme.typography.titleLarge,
+                color = Color.White,
+                modifier = if (isFullText) Modifier.align(Alignment.Center) else Modifier
             )
         }
     } else {
