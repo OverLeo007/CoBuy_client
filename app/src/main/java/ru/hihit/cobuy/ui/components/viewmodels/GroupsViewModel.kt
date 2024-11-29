@@ -24,7 +24,7 @@ import ru.hihit.cobuy.utils.toUri
 class GroupsViewModel : ViewModel() {
 
     var isLoading = MutableLiveData(false)
-    var scanError: String by mutableStateOf("ASDASDASDA")
+    var scanError: String by mutableStateOf("")
 
     val groups: MutableStateFlow<List<GroupData>> = MutableStateFlow(emptyList())
 

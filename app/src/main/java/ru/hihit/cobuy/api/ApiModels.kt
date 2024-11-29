@@ -3,6 +3,8 @@ package ru.hihit.cobuy.api
 import android.net.Uri
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import ru.hihit.cobuy.models.EventType
 import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.models.ProductStatusSerializer
 import ru.hihit.cobuy.utils.UriSerializer
@@ -67,3 +69,16 @@ data class ProductImageData(
     @Serializable(with = UriSerializer::class)
     val productImgUrl: Uri?
 )
+
+
+@Serializable
+data class GroupChangedEvent(
+    val type: EventType,
+    val data: GroupData
+) {
+    companion object {
+        fun fromJson(json: String): GroupChangedEvent {
+            return Json.decodeFromString(json)
+        }
+    }
+}

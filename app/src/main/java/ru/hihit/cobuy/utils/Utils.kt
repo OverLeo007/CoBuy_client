@@ -4,17 +4,21 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
 import android.net.Uri
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializer
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import ru.hihit.cobuy.BuildConfig
+import ru.hihit.cobuy.api.GroupChangedEvent
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
 import java.lang.reflect.Type
@@ -72,12 +76,19 @@ object UriSerializer : KSerializer<Uri> {
 
 
 
-fun prepareBitmapToRequest(bitmap: Bitmap, fileName: String): MultipartBody.Part {
-    val bos = ByteArrayOutputStream()
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos)
-    val data = bos.toByteArray()
+fun prepareBitmapToRequest(bitmap: Bitmap, fileName: String, maxSizeInMB: Int = 5): MultipartBody.Part {
+    val maxSizeInBytes = maxSizeInMB * 1024 * 1024
+    var quality = 100
+    var compressedData: ByteArray
 
-    val reqFile = data.toRequestBody("image/jpeg".toMediaTypeOrNull())
+    do {
+        val bos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, bos)
+        compressedData = bos.toByteArray()
+        quality -= 5
+    } while (compressedData.size > maxSizeInBytes && quality > 0)
+    Log.d("BitmapPreparer", "Quality: $quality, size: ${compressedData.size}")
+    val reqFile = compressedData.toRequestBody("image/jpeg".toMediaTypeOrNull())
     return MultipartBody.Part.createFormData("image", fileName, reqFile)
 }
 

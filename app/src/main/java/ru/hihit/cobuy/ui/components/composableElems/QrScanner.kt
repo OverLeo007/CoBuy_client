@@ -41,8 +41,8 @@ fun CameraScanner(
 
 
     AndroidView(
-        factory = { AndroidViewContext ->
-            PreviewView(AndroidViewContext).apply {
+        factory = { viewContext ->
+            PreviewView(viewContext).apply {
                 this.scaleType = PreviewView.ScaleType.FILL_CENTER
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -51,7 +51,8 @@ fun CameraScanner(
                 implementationMode = PreviewView.ImplementationMode.COMPATIBLE
             }
         },
-        modifier = modifier.padding(PaddingValues(top = 20.dp, bottom = 20.dp)),
+        //.padding(PaddingValues(top = 20.dp, bottom = 20.dp))
+        modifier = modifier,
         update = { previewView ->
             val cameraSelector: CameraSelector = CameraSelector.Builder()
                 .requireLensFacing(CameraSelector.LENS_FACING_BACK)
@@ -89,7 +90,7 @@ fun CameraScanner(
                         imageAnalysis
                     )
                 } catch (e: Exception) {
-                    Log.d("TAG", "CameraPreview: ${e.localizedMessage}")
+                    Log.d("CameraPreview", "CameraPreview: ${e.localizedMessage}")
                 }
             }, ContextCompat.getMainExecutor(context))
         }

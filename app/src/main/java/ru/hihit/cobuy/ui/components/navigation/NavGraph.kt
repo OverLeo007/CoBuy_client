@@ -44,6 +44,7 @@ fun NavGraph(
     startDestination: String,
     navigateTo: String
 ) {
+    var lastNavigation: String = ""
 
     navHostController.addOnDestinationChangedListener { _, dest, arguments ->
         var resRoute: String? = null
@@ -60,6 +61,9 @@ fun NavGraph(
                 }
             }
             resRoute = tempRoute
+        }
+        if (resRoute == lastNavigation) {
+            return@addOnDestinationChangedListener
         }
         Log.d("NavGraph", "destination changed: $resRoute")
         val context = App.getContext()
@@ -88,22 +92,23 @@ fun NavGraph(
 //        Log.d("NavGraph", "new last_route saved: $fullRoute")
     }
 
-    var isLoaded by remember { mutableStateOf(false)}
+    var isLoaded by remember { mutableStateOf(false) }
+    var hasNavigated by remember { mutableStateOf(false) }
 
     LaunchedEffect(isLoaded) {
-        Log.d("NavGraph", "NavigateToAfterLoad dummy: $navigateTo")
-        navHostController.popBackStack()
-        navHostController.navigate(Route.Groups) {
-            launchSingleTop = false
-            restoreState = true
-        }
-        if (isLoaded) {
+        if (isLoaded && !hasNavigated) {
+            Log.d("NavGraph", "NavigateToAfterLoad dummy: $navigateTo")
+            navHostController.popBackStack()
+            navHostController.navigate(Route.Groups) {
+                launchSingleTop = false
+                restoreState = true
+            }
             if (navigateTo != Route.Groups) {
                 navHostController.navigate(route = navigateTo)
             } else {
                 navHostController.navigate(route = startDestination)
             }
-
+            hasNavigated = true
         }
     }
 
@@ -145,7 +150,8 @@ fun NavGraph(
         composable(Route.Group + "/{groupId}") {
             val vm: GroupViewModel = viewModel(key = Route.Group) {
                 GroupViewModel(
-                    it.arguments?.getString("groupId")?.toInt() ?: 0
+                    it.arguments?.getString("groupId")?.toInt() ?: 0,
+                    navHostController = navHostController
                 )
             }
             GroupScreen(navHostController = navHostController, vm = vm)

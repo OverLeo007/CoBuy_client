@@ -42,6 +42,11 @@ class App : Application() {
             .build()
     }
 
+    override fun onTerminate() {
+        super.onTerminate()
+        pusherService.close()
+    }
+
     companion object {
         private lateinit var instance: App
 

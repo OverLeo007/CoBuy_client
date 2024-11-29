@@ -10,13 +10,16 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,6 +40,8 @@ fun ScanScreen(
 ) {
 
     val context = LocalContext.current
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
 
     val imagePickLauncher =
         rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -52,10 +57,8 @@ fun ScanScreen(
             }
         }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
+    Scaffold(
+        topBar = {
             TopAppBarImpl(
                 title = {
                     Box(
@@ -70,16 +73,24 @@ fun ScanScreen(
                 isBackArrow = true,
                 isSettings = false
             )
-            Spacer(modifier = Modifier.height(20.dp))
+        }
+    ) { pd ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(pd),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
             CameraScanner(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(500.dp),
+                    .height(screenHeight * 0.6F)
+                ,
                 onScanned = {
                     vm.joinGroup(it, navHostController)
 
                 }
             )
+            Spacer(modifier = Modifier.height(28.dp))
             if (vm.scanError != "") {
                 Text(
                     text = vm.scanError,
@@ -111,5 +122,54 @@ fun ScanScreen(
             }
 
         }
+
     }
+//    Box(modifier = Modifier.fillMaxSize()) {
+//        Column(
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//
+////            Spacer(modifier = Modifier.height(20.dp))
+//            CameraScanner(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+////                    .height(500.dp)
+//                ,
+//                onScanned = {
+//                    vm.joinGroup(it, navHostController)
+//
+//                }
+//            )
+//            if (vm.scanError != "") {
+//                Text(
+//                    text = vm.scanError,
+//                    color = MaterialTheme.colorScheme.error,
+//                    style = MaterialTheme.typography.bodyMedium,
+//                    textAlign = TextAlign.Center
+//                )
+//                Spacer(modifier = Modifier.height(16.dp))
+//            }
+////            Spacer(modifier = Modifier.height(25.dp))
+//            Row(
+//                modifier = Modifier.fillMaxSize(),
+//                verticalAlignment = Alignment.CenterVertically
+//
+//            ) {
+//                IconButton(
+//                    onClick = {
+//                        imagePickLauncher.launch("image/*")
+//                    }
+//                ) {
+//                    Icon(painter = painterResource(R.drawable.photo_library_24dp), "Load from photos")
+//                }
+//                Text(
+//                    text = stringResource(R.string.point_camera_qr),
+//                    color = MaterialTheme.colorScheme.onSurface,
+//                    style = MaterialTheme.typography.titleMedium,
+//                    textAlign = TextAlign.Center
+//                )
+//            }
+//
+//        }
+//    }
 }

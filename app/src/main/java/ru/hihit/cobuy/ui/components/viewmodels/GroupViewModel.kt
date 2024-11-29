@@ -9,11 +9,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.pusher.client.channel.PusherEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerializationException
 import ru.hihit.cobuy.App
+import ru.hihit.cobuy.api.GroupChangedEvent
 import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.api.GroupRequester
 import ru.hihit.cobuy.api.ImageRequester
@@ -24,12 +27,18 @@ import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.lists.CreateListRequest
+import ru.hihit.cobuy.models.EventType
+import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.getMultipartImageFromUri
 import ru.hihit.cobuy.utils.makeShareQrIntent
 import ru.hihit.cobuy.utils.toUri
 
-class GroupViewModel(private val groupId: Int) : ViewModel() {
+class GroupViewModel(
+    private val groupId: Int,
+    private val navHostController: NavHostController
+) : ViewModel() {
 
+    val className = this.javaClass.simpleName
     var isGroupLoading = mutableStateOf(true)
     var isRefreshing = mutableStateOf(false)
     var isInviteLinkLoading = mutableStateOf(false)
@@ -48,17 +57,33 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
 
 
     private fun subscribeToGroup() {
-//        pusherService.subscribeToChannel(
-//            channelName = "group-changed.$groupId",
-//            eventName = "group-changed",
-//            onEvent = { onWsEvent(it) },
-//            onError = { message, e -> onWsError(message, e) }
-//        )
+        pusherService.addListener(
+            channelName = "group-changed.$groupId",
+            eventName = "group-changed",
+            listenerName = className,
+            onEvent = { onWsGroupChanged(it) },
+            onError = { message, e -> onWsError(message, e) }
+        )
     }
 
 
-    private fun onWsEvent(event: PusherEvent) {
+    private fun onWsGroupChanged(event: PusherEvent) {
         Log.d("GroupViewModel", "onWsEvent: $event")
+        val eventData: GroupChangedEvent
+        try {
+            eventData = GroupChangedEvent.fromJson(event.data)
+            Log.d(className, "Got group from ws: $eventData")
+            when (eventData.type) {
+                EventType.Update -> this.group.value = eventData.data
+                EventType.Delete -> navHostController.navigate(Route.Groups)
+                EventType.Create -> {}
+            }
+        } catch (e: SerializationException) {
+            Log.e("GroupViewModel", "json from ws event is not serializable to GroupChangedEvent: $event")
+            return
+        }
+
+
     }
 
     private fun onWsError(message: String?, e: Exception?) {
@@ -245,7 +270,7 @@ class GroupViewModel(private val groupId: Int) : ViewModel() {
 
     override fun onCleared() {
         super.onCleared()
-        pusherService.unsubscribeFromChannel("group-changed.$groupId")
+        pusherService.removeListener(className)
     }
 
 }
