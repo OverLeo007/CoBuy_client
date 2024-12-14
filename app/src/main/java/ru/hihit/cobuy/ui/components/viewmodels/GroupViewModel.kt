@@ -20,6 +20,7 @@ import ru.hihit.cobuy.api.GroupChangedEvent
 import ru.hihit.cobuy.api.GroupData
 import ru.hihit.cobuy.api.GroupRequester
 import ru.hihit.cobuy.api.ImageRequester
+import ru.hihit.cobuy.api.ListChangedEvent
 import ru.hihit.cobuy.api.ListData
 import ru.hihit.cobuy.api.ListRequester
 import ru.hihit.cobuy.api.MiscRequester
@@ -36,9 +37,8 @@ import ru.hihit.cobuy.utils.toUri
 class GroupViewModel(
     private val groupId: Int,
     private val navHostController: NavHostController
-) : ViewModel() {
+) : PusherViewModel() {
 
-    val className = this.javaClass.simpleName
     var isGroupLoading = mutableStateOf(true)
     var isRefreshing = mutableStateOf(false)
     var isInviteLinkLoading = mutableStateOf(false)
@@ -47,20 +47,18 @@ class GroupViewModel(
         MutableStateFlow(GroupData(0, "", "".toUri(), "", 0, 0, 0, emptyList()))
     var lists: MutableStateFlow<List<ListData>> = MutableStateFlow(emptyList())
 
-    private val pusherService = App.getPusherService()
 
     init {
         updateAll()
         subscribeToGroup()
+        subscribeToLists()
     }
-
-
 
     private fun subscribeToGroup() {
         pusherService.addListener(
             channelName = "group-changed.$groupId",
             eventName = "group-changed",
-            listenerName = className,
+            listenerName = className + "GroupChanged",
             onEvent = { onWsGroupChanged(it) },
             onError = { message, e -> onWsError(message, e) }
         )
@@ -82,7 +80,50 @@ class GroupViewModel(
             Log.e("GroupViewModel", "json from ws event is not serializable to GroupChangedEvent: $event")
             return
         }
+    }
 
+    private fun subscribeToLists() {
+        pusherService.addListener(
+            channelName = "list-changed.$groupId",
+            eventName = "list-changed",
+            listenerName = className + "ListChanged",
+            onEvent = { onWsListsChanged(it) },
+            onError = { message, e -> onWsError(message, e) }
+        )
+    }
+
+    private fun onWsListsChanged(event: PusherEvent) {
+        Log.d("GroupViewModel", "onWsEvent: $event")
+        val eventData: ListChangedEvent
+        try {
+            eventData = ListChangedEvent.fromJson(event.data)
+            Log.d(className, "Got list from ws: $eventData")
+            when (eventData.type) {
+                EventType.Update -> {
+                    val curLists = lists.value.toMutableList()
+                    val listIndex = curLists.indexOfFirst { it.id == eventData.data.id }
+                    if (listIndex != -1) {
+                        curLists[listIndex] = eventData.data
+                        lists.value = curLists
+                    }
+                }
+                EventType.Delete -> {
+                    val curLists = lists.value.toMutableList()
+                    curLists.removeIf { it.id == eventData.data.id }
+                    lists.value = curLists
+                }
+                EventType.Create -> {
+                    val curLists = lists.value.toMutableList()
+                    if (curLists.find { list -> list.id == eventData.data.id } == null) {
+                        curLists.add(eventData.data)
+                    }
+                    lists.value = curLists
+                }
+            }
+        } catch (e: SerializationException) {
+            Log.e("GroupViewModel", "json from ws event is not serializable to ListChangedEvent: $event")
+            return
+        }
 
     }
 
@@ -217,7 +258,9 @@ class GroupViewModel(
                 Log.d("GroupViewModel", "onAddList: $it")
                 it?.let {
                     val curLists = lists.value.toMutableList()
-                    curLists.add(it.data)
+                    if (curLists.find { list -> list.id == it.data.id } == null) {
+                        curLists.add(it.data)
+                    }
                     lists.value = curLists
                 }
             },
@@ -270,7 +313,10 @@ class GroupViewModel(
 
     override fun onCleared() {
         super.onCleared()
-        pusherService.removeListener(className)
+        pusherService.removeListeners(
+            className + "GroupChanged",
+            className + "ListChanged"
+        )
     }
 
 }

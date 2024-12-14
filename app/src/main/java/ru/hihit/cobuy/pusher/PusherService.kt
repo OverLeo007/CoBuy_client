@@ -69,6 +69,12 @@ class PusherService {
         channelsPool.unlisten(listenerName)
     }
 
+    fun removeListeners(vararg listenerNames: String) {
+        listenerNames.forEach { listenerName ->
+            channelsPool.unlisten(listenerName)
+        }
+    }
+
     fun close() {
         channelsPool.unlistenAll()
         pusher.disconnect()

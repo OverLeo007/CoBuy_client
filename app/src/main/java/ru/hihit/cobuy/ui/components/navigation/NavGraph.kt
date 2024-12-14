@@ -159,7 +159,8 @@ fun NavGraph(
         composable(Route.List + "/{listId}") {
             val vm: ListViewModel = viewModel(key = Route.List) {
                 ListViewModel(
-                    it.arguments?.getString("listId")?.toInt() ?: 0
+                    it.arguments?.getString("listId")?.toInt() ?: 0,
+                    navHostController = navHostController
                 )
             }
             ListScreen(navHostController = navHostController, vm = vm)

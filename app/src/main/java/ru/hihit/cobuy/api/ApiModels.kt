@@ -82,3 +82,27 @@ data class GroupChangedEvent(
         }
     }
 }
+
+@Serializable
+data class ListChangedEvent(
+    val type: EventType,
+    val data: ListData
+) {
+    companion object {
+        fun fromJson(json: String): ListChangedEvent {
+            return Json.decodeFromString(json)
+        }
+    }
+}
+
+@Serializable
+data class ProductChangedEvent(
+    val type: EventType,
+    val data: ProductData
+) {
+    companion object {
+        fun fromJson(json: String): ProductChangedEvent {
+            return Json.decodeFromString(json)
+        }
+    }
+}

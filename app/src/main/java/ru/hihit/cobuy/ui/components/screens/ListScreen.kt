@@ -59,6 +59,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -74,7 +75,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.ProductData
@@ -147,7 +147,6 @@ fun ListScreen(
             AddButton(
                 onClick = { openAddProductModal.value = true },
                 Modifier
-//                modifier = Modifier.align(Alignment.BottomEnd)
             )
         },
         snackbarHost = {
@@ -160,6 +159,7 @@ fun ListScreen(
             onRefresh = {
                 vm.onRefresh()
             }) {
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -564,7 +564,6 @@ fun ListEditableTitle(
     listName: String = "List",
     onNameChanged: (String) -> Unit = {},
 ) {
-
     var isNameEditing by remember {
         mutableStateOf(false)
     }
@@ -572,9 +571,14 @@ fun ListEditableTitle(
         mutableStateOf(true)
     }
 
+    val currentListName by rememberUpdatedState(listName)
     var text by remember { mutableStateOf(listName) }
 
-
+    LaunchedEffect(currentListName) {
+        if (!isNameEditing) {
+            text = currentListName
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -616,3 +620,4 @@ fun ListEditableTitle(
         }
     }
 }
+
