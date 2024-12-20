@@ -158,7 +158,7 @@ fun GroupScreen(
                     isRefreshing = true
                 }) {
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxSize()
                 ) {
                     items(lists) { list ->
                         ListItem(

@@ -60,7 +60,9 @@ class ListViewModel(
             Log.d(className, "Got list from ws: $eventData")
             when (eventData.type) {
                 EventType.Update -> {
-                    list.value = eventData.data
+                    if (eventData.data.id == listId) {
+                        list.value = eventData.data
+                    }
                 }
 
                 EventType.Delete -> {
@@ -242,7 +244,7 @@ class ListViewModel(
                     Log.d("ListViewModel", "onUploadImage: $response")
                 },
                 onError = { code, body ->
-                    Log.e("ListViewModel", "onUploadImage: $code $body")
+                    Log.e("ListViewModel", "onUploadImage: $code ${body?.string()}")
                 }
             )
         }

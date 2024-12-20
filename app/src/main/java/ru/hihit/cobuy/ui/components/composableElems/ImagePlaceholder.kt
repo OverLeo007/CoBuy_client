@@ -37,7 +37,7 @@ fun ImagePlaceholder(
     uri: Uri?,
     modifier: Modifier,
     name: String,
-    contentScale: ContentScale = ContentScale.Fit,
+    contentScale: ContentScale = ContentScale.Crop,
     isFullScreen: Boolean = false,
     onFullScreenChange: (Boolean) -> Unit = {},
     isFullText: Boolean = false
