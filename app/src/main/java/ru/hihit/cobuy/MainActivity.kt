@@ -2,6 +2,7 @@ package ru.hihit.cobuy
 
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -19,6 +20,7 @@ import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.screens.MainScreen
 import ru.hihit.cobuy.ui.theme.CoBuyTheme
 import ru.hihit.cobuy.utils.getFromPreferences
+import ru.hihit.cobuy.utils.getUserDataFromPreferences
 import ru.hihit.cobuy.utils.removeFromPreferences
 
 
@@ -44,20 +46,8 @@ class MainActivity : ComponentActivity() {
 
             AuthRequester.checkLogin(
                 callback = { response ->
-                    if (response != null) {
-                        if (context.getFromPreferences(
-                                "user_id",
-                                -1
-                            ) == response.userData.id
-                            && context.getFromPreferences(
-                                "user_name",
-                                ""
-                            ) == response.userData.name
-                            && context.getFromPreferences(
-                                "user_email",
-                                ""
-                            ) == response.userData.email
-                        ) {
+                    response?.let {
+                        (context.getUserDataFromPreferences() == response.userData).let {
                             val lastRoute = context.getFromPreferences("last_route", Route.Groups)
                             navigateTo = if (lastRoute.contains(Regex("\\{.*?\\}")) || lastRoute.contains(Route.Dummy)) {
                                 context.removeFromPreferences("last_route")
@@ -66,6 +56,9 @@ class MainActivity : ComponentActivity() {
                             Log.d("MainActivity", "start_from: $navigateTo")
                             startDestination = Route.Groups
                         }
+                    } ?: run {
+                        Toast.makeText(context, "Ошибка авторизации, возможно проблема с сервером", Toast.LENGTH_SHORT).show()
+                        startDestination = Route.Authorization
                     }
                     setContent {
                         CoBuyTheme {

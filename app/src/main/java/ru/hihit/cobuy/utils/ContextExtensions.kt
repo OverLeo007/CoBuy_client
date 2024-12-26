@@ -110,17 +110,14 @@ fun Context.makeShareQrIntent(qrBitmap: ImageBitmap, groupName: String): Intent 
     val file = File(this.cacheDir, "qr_code.png")
     val fOut = FileOutputStream(file)
 
-    // Преобразование ImageBitmap в android.graphics.Bitmap
     val androidBitmap = qrBitmap.asAndroidBitmap()
 
-    // Создание нового Bitmap с белым фоном
     val whiteBmp =
         Bitmap.createBitmap(androidBitmap.width, androidBitmap.height, androidBitmap.config)
     val canvas = Canvas(whiteBmp)
     canvas.drawColor(Color.WHITE)
     canvas.drawBitmap(androidBitmap, 0f, 0f, null)
 
-    // Сжатие Bitmap с белым фоном
     whiteBmp.compress(Bitmap.CompressFormat.PNG, 85, fOut)
     fOut.flush()
     fOut.close()
@@ -135,7 +132,6 @@ fun Context.makeShareQrIntent(qrBitmap: ImageBitmap, groupName: String): Intent 
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }
 
-    // Установите ClipData для поддержки как текста, так и изображения
     val clipData = ClipData.newUri(this.contentResolver, "QR Code", uri)
     shareIntent.clipData = clipData
     return shareIntent
