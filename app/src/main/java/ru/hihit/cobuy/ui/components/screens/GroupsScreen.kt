@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,7 +35,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -49,7 +47,7 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.GroupData
-import ru.hihit.cobuy.ui.components.composableElems.AddButton
+import ru.hihit.cobuy.ui.components.composableElems.FloatingActionButtonImpl
 import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
@@ -159,7 +157,7 @@ fun GroupsScreen(
             }
         }
 
-        AddButton(
+        FloatingActionButtonImpl(
             onClick = { openAddModal.value = true },
             modifier = Modifier.align(Alignment.BottomEnd)
         )

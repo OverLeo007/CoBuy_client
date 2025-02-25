@@ -15,7 +15,6 @@ class PusherService {
     init {
         val options = PusherOptions().apply {
             setCluster(BuildConfig.PUSHER_CLUSTER)
-//            setChannelAuthorizer()
         }
         pusher = Pusher(BuildConfig.PUSHER_KEY, options)
         pusher.connect()
@@ -29,29 +28,7 @@ class PusherService {
         onEvent: (PusherEvent) -> Unit,
         onError: (String?, Exception?) -> Unit
     ) {
-//        Log.d("PusherService", "Subscribing to channel $channelName")
-//        var channel: Channel
-//        try {
-//            channel = pusher.subscribe(channelName)
-//        } catch (e: IllegalArgumentException) {
-//            Log.e("PusherService", "Error subscribing to channel $channelName: $e")
-//            unsubscribeFromChannel(channelName)
-//            Log.d("PusherService", "Trying to subscribe to channel $channelName again")
-//            channel = pusher.subscribe(channelName)
-//        }
-//        val listener: SubscriptionEventListener = object : SubscriptionEventListener {
-//            override fun onEvent(event: PusherEvent) {
-//                Log.d("PusherService", "Received event: $event")
-//                onEvent(event)
-//            }
-//
-//            override fun onError(message: String?, e: Exception?) {
-//                Log.d("PusherService", "Error: $message")
-//                onError(message, e)
-//            }
-//        }
-//        channel.bind(eventName, listener)
-//        Log.d("PusherService", "Subscribed to channel? ${channel.isSubscribed}")
+
 
         channelsPool.listen(channelName, eventName, listenerName, onEvent, onError)
     }

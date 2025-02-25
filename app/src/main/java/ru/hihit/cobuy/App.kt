@@ -80,7 +80,6 @@ class AuthInterceptor(context: Context) : Interceptor {
 
     private fun getToken(): String {
         val token = sharedPreferences.getString("auth_token", "") ?: ""
-//        Log.d("AuthInterceptor", "Got token: $token")
         return token
     }
 }

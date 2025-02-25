@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId = "ru.hihit.cobuy"
-        minSdk = 31
+        minSdk = 29
         targetSdk = 34
         versionCode = 1
         versionName = "0.1"

@@ -55,7 +55,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,7 +79,7 @@ import kotlinx.coroutines.launch
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.ProductData
 import ru.hihit.cobuy.models.ProductStatus
-import ru.hihit.cobuy.ui.components.composableElems.AddButton
+import ru.hihit.cobuy.ui.components.composableElems.FloatingActionButtonImpl
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.NewAddProductModal
@@ -145,7 +144,7 @@ fun ListScreen(
             )
         },
         floatingActionButton = {
-            AddButton(
+            FloatingActionButtonImpl(
                 onClick = { openAddProductModal.value = true },
                 Modifier
             )
@@ -182,10 +181,10 @@ fun ListScreen(
                                         snackBarScope.launch {
                                             val result = snackbarHostState
                                                 .showSnackbar(
-                                                    message = "Продукт удален, вопросы?",
-                                                    actionLabel = "Нинада!!!",
+                                                    message = "Продукт будет удален",
+                                                    actionLabel = "Отмена",
                                                     // Defaults to SnackbarDuration.Short
-                                                    duration = SnackbarDuration.Indefinite,
+                                                    duration = SnackbarDuration.Long,
                                                     withDismissAction = true
                                                 )
                                             when (result) {
@@ -195,7 +194,7 @@ fun ListScreen(
                                                 }
 
                                                 SnackbarResult.Dismissed -> {
-                                                    Toast.makeText(context, "Продукт удален (с концами)", Toast.LENGTH_SHORT).show()
+                                                    Toast.makeText(context, "Продукт удален", Toast.LENGTH_SHORT).show()
                                                     vm.onProductDeleted(curProduct)
                                                 }
                                             }
@@ -520,7 +519,7 @@ fun ProductItem(
                             } else {
                                 val statusWord = if (product.status == ProductStatus.BOUGHT) stringResource(id = R.string.bought_by_word) else stringResource(id = R.string.planned_by_word)
                                 Text(
-                                    text = statusWord + product.buyer.name,
+                                    text = statusWord + ' ' + product.buyer.name,
                                     style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp)
                                 )
                             }

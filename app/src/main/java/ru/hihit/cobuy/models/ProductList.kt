@@ -5,4 +5,5 @@ data class ProductList(
     var name: String  = "default list name",
     val parent: Group = Group.default(),
     var products: List<Product> = emptyList(),
+    var hidden: Boolean = false,
 )

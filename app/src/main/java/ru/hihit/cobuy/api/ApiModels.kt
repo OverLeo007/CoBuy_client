@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
+
 package ru.hihit.cobuy.api
 
 import android.net.Uri
@@ -8,6 +10,7 @@ import ru.hihit.cobuy.models.EventType
 import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.models.ProductStatusSerializer
 import ru.hihit.cobuy.utils.UriSerializer
+
 
 @Serializable
 data class GroupData(
@@ -53,7 +56,8 @@ data class ListData(
     var name: String = "",
     val groupId: Int = 0,
     var productsCount: Int = 0,
-    var checkedProductsCount: Int = 0
+    var checkedProductsCount: Int = 0,
+    var hidden: Boolean = false
 )
 
 @Serializable
