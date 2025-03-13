@@ -45,5 +45,23 @@
     <string name="leave_word">Выйти</string>
     <string name="bought_by_word">"Куплено "</string>
     <string name="planned_by_word">"Запланировано "</string>
+    <string name="notification_level">Уровень уведомлений</string>
+    <string name="notification_level_description">Вы можете выбрать какие уведомления будут показаны</string>
+    <string name="notification_level_none">Без уведомлений</string>
+    <string name="notification_level_important">Только важные уведомления</string>
+    <string name="notification_level_all">Все уведомления</string>
+    <string name="show_completed_lists">Показывать завершенные списки</string>
+    <string name="product_card_type">Тип карточки продукта</string>
+    <string name="product_card_type_description">Вы можете выбрать то как отображаются продукты в списке</string>
+    <string name="product_card_type_standard">Стандартное отображение</string>
+    <string name="product_card_type_shopping_list">Список покупок</string>
+    <string name="product_card_type_picture">Карточки с картинкой</string>
+    <string name="theme">Тема приложения</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_system">Системная</string>
+    <string name="on">Вкл.</string>
+    <string name="off">Выкл.</string>
+    <string name="hidden_lists_count">"Списков скрыто: "</string>
 
 </resources>

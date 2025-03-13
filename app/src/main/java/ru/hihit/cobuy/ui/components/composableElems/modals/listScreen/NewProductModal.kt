@@ -51,6 +51,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -293,7 +294,7 @@ fun NewProductModal(
                                     .fillMaxHeight()
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
-                                        indication = rememberRipple(bounded = true)
+                                        indication = ripple(bounded = true)
                                     ) {
                                         tempImageUri.value = FileProvider.getUriForFile(
                                             context,
@@ -335,7 +336,7 @@ fun NewProductModal(
                                     .fillMaxHeight()
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
-                                        indication = rememberRipple(bounded = true)
+                                        indication = ripple(bounded = true)
                                     ) {
                                         launcher.launch("image/*")
                                     },

@@ -21,7 +21,11 @@ interface ProductsApiService {
     suspend fun getProductById(@Path("list_id") listId: Int, @Path("id") id: Int): Response<GetUpdateProductResponse>
 
     @PUT("api/list/{list_id}/product/{id}")
-    suspend fun updateProduct(@Path("list_id") listId: Int, @Path("id") id: Int, @Body request: UpdateProductRequest): Response<GetUpdateProductResponse>
+    suspend fun updateProduct(
+        @Path("list_id") listId: Int,
+        @Path("id") id: Int,
+        @Body request: UpdateProductRequest
+    ): Response<GetUpdateProductResponse>
 
     @DELETE("api/list/{list_id}/product/{id}")
     suspend fun deleteProduct(@Path("list_id") listId: Int, @Path("id") id: Int): Response<Unit>

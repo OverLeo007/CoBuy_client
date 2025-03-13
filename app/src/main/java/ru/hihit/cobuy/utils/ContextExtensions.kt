@@ -17,12 +17,14 @@ import java.io.File
 import java.io.FileOutputStream
 
 
-fun Context.copyToClipboard(text: CharSequence){
+fun Context.copyToClipboard(text: CharSequence) {
     val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-    val clip = ClipData.newPlainText("label",text)
+    val clip = ClipData.newPlainText("label", text)
     clipboard.setPrimaryClip(clip)
     Toast.makeText(this, "Copied to clipboard", Toast.LENGTH_SHORT).show()
 }
+
+
 
 fun Context.saveToPreferences(key: String, value: Any) {
     val sharedPreferences = this.getSharedPreferences("CoBuyApp", Context.MODE_PRIVATE)
@@ -38,6 +40,7 @@ fun Context.saveToPreferences(key: String, value: Any) {
                 @Suppress("UNCHECKED_CAST")
                 putStringSet(key, value as Set<String>)
             }
+
             else -> throw IllegalArgumentException("Unsupported type of value")
         }
         apply()
@@ -127,7 +130,10 @@ fun Context.makeShareQrIntent(qrBitmap: ImageBitmap, groupName: String): Intent 
     val shareIntent = Intent().apply {
         action = Intent.ACTION_SEND
         putExtra(Intent.EXTRA_STREAM, uri)
-        putExtra(Intent.EXTRA_TEXT, this@makeShareQrIntent.getString(R.string.share_qr_text, groupName))
+        putExtra(
+            Intent.EXTRA_TEXT,
+            this@makeShareQrIntent.getString(R.string.share_qr_text, groupName)
+        )
         type = "image/png"
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     }

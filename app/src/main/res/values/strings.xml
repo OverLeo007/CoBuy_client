@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">CoBuy</string>
-    <string name="api_url" translatable="false">http://hihit.sytes.net/</string>
+    <string name="api_url" translatable="false">http://hihit.sytes.net:9987/</string>
     <string name="account_create_success">Account created, please log in</string>
     <string name="login_success">Successful login</string>
     <string name="authorization_error">Authorization error</string>
@@ -46,5 +46,23 @@
     <string name="leave_word">Leave</string>
     <string name="bought_by_word">Bought by </string>
     <string name="planned_by_word">Planned by </string>
+    <string name="notification_level">Notification level</string>
+    <string name="notification_level_description">You can choose which notifications will be shown.</string>
+    <string name="notification_level_none">Without notifications</string>
+    <string name="notification_level_important">Important notifications only</string>
+    <string name="notification_level_all">All notifications</string>
+    <string name="show_completed_lists">Show completed lists</string>
+    <string name="product_card_type">Product Card Type</string>
+    <string name="product_card_type_description">You can choose how the products are displayed in the list</string>
+    <string name="product_card_type_standard">Standard display</string>
+    <string name="product_card_type_shopping_list">Shopping list</string>
+    <string name="product_card_type_picture">Picture cards</string>
+    <string name="theme">Application theme</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="theme_system">System</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="hidden_lists_count">Lists hidden:</string>
 
 </resources>

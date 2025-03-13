@@ -1,19 +1,15 @@
 package ru.hihit.cobuy.ui.components.screens
 
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -22,14 +18,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import me.zhanghai.compose.preference.ListPreferenceType
+import me.zhanghai.compose.preference.listPreference
+import me.zhanghai.compose.preference.twoTargetSwitchPreference
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.navigation.Route
+import ru.hihit.cobuy.ui.components.viewmodels.SettingKeys
 import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
 
 @Composable
@@ -42,16 +42,22 @@ fun SettingsScreen(
     var isError by remember { mutableStateOf(false) }
     var text by remember { mutableStateOf(vm.user.name) }
 
-//    val launcher =
-//        rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri: Uri? ->
-//            uri?.let {
-//                imageUri = it
-//                vm.onAvatarSelected(it) // Вызовите функцию обратного вызова с Uri изображения
-//            }
-//        }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column {
+    val onRes = stringResource(R.string.on)
+    val offRes = stringResource(R.string.off)
+
+    val showCompletedListsStr = stringResource(R.string.show_completed_lists)
+
+    val themeStr = stringResource(R.string.theme)
+
+    val themeStrMap = mapOf(
+        SettingKeys.THEME_LIGHT to stringResource(R.string.theme_light),
+        SettingKeys.THEME_DARK to stringResource(R.string.theme_dark),
+        SettingKeys.THEME_SYSTEM to stringResource(R.string.theme_system)
+    )
+
+    Scaffold(
+        topBar = {
             TopAppBarImpl(
                 title = {
                     Box(
@@ -80,18 +86,52 @@ fun SettingsScreen(
                     }
                 }
             )
+        }
+    ) { paddingValues ->
+//        Column(
+//            modifier = Modifier.fillMaxWidth().padding(PaddingValues(start = 16.dp))
+//        ) {
+//            Text(
+//                text = "Login as:\nId:${vm.user.id}\nLogin: ${vm.user.name}\nEmail: ${vm.user.email}\n",
+//            )
+//        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp)),
+            contentPadding = paddingValues
+        ) {
+            twoTargetSwitchPreference(
+                key = SettingKeys.SHOW_COMPLETED_LISTS,
+                defaultValue = true,
+                title = { Text(text = showCompletedListsStr) },
+                summary = { Text(text = if (it) onRes else offRes) },
+            ) {}
+//            listPreference(
+//                key = "list_alert_dialog_preference",
+//                defaultValue = "Alpha",
+//                values = listOf("Alpha", "Beta", "Canary"),
+//                title = { Text(text = "List preference (alert dialog)") },
+//                summary = { Text(text = it) },
+//            )
+            listPreference(
+                key = SettingKeys.THEME,
+                defaultValue = SettingKeys.THEME_SYSTEM,
+                values = themeStrMap.keys.toList(),
+                valueToText = { AnnotatedString(themeStrMap[it] ?: "") },
+                title = { Text(text = themeStr) },
+                summary = { Text(text = themeStrMap[it] ?: "") },
+                type = ListPreferenceType.DROPDOWN_MENU,
+            )
+        }
+    }
 
-            Spacer(modifier = Modifier.size(20.dp))
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(PaddingValues(start = 16.dp))
-            ) {
-                Text(
-                    text = "Login as:\nId:${vm.user.id}\nLogin: ${vm.user.name}\nEmail: ${vm.user.email}\n",
-                )
-            }
-            Box(Modifier.fillMaxSize()) {
-                Text("Settings will be here in the future", modifier = Modifier.align(Alignment.Center))
-            }
+//    Box(modifier = Modifier.fillMaxSize()) {
+//        Column {
+//
+//
+//            Spacer(modifier = Modifier.size(20.dp))
+
 //            Column(
 //                modifier = Modifier.fillMaxWidth(),
 //                horizontalAlignment = Alignment.CenterHorizontally
@@ -280,8 +320,8 @@ fun SettingsScreen(
 //                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
 //                }
 //            }
-        }
-    }
+//        }
+//    }
 
 
 }

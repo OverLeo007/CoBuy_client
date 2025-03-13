@@ -164,7 +164,6 @@ fun ListScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp)),
-//                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp)
                 contentPadding = paddingValues
             ) {
                 items(items = products, key = { it.id } ) { curProduct ->
@@ -241,67 +240,6 @@ fun ListScreen(
 
     }
 
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize(),
-//    ) {
-//        Column {
-//            TopAppBarImpl(
-//                title = {
-//                    if (isListLoading) {
-//                        Box(
-//                            modifier = Modifier
-//                                .fillMaxSize(),
-//                            contentAlignment = Alignment.Center
-//                        ) {
-//                            CircularProgressIndicator(
-//                                color = MaterialTheme.colorScheme.onSurface
-//                            )
-//                        }
-//                    } else {
-//                        ListEditableTitle(list.name) { vm.onNameChanged(it) }
-//                    }
-//                },
-//                navHostController = navHostController,
-//            )
-//
-//            SwipeRefreshImpl(
-//                swipeState = swipeRefreshState,
-//                onRefresh = {
-//                    vm.onRefresh()
-//                }) {
-//                LazyColumn(
-//                    modifier = Modifier.fillMaxWidth(),
-//                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp)
-//                ) {
-//                    items(products) { curProduct ->
-//                        ProductItem(
-//                            product = curProduct,
-//                            onStatusChanged = { product -> vm.onProductStatusChanged(product) },
-//                            onDelete = { product ->
-//                                vm.onProductDeleted(product)
-//                            },
-//                            onEdited = { product ->
-//                                vm.onProductEdited(product)
-//                            },
-//                            onImageSelected = { product ->
-//                                vm.onUploadImage(context, product)
-//                            }
-//                        )
-//                    }
-//                    item {
-//                        Spacer(modifier = Modifier.height(100.dp))
-//                    }
-//
-//                }
-//            }
-//        }
-//        AddButton(
-//            onClick = { openAddProductModal.value = true },
-//            modifier = Modifier.align(Alignment.BottomEnd)
-//        )
-//    }
-
 }
 
 @OptIn(
@@ -333,28 +271,6 @@ fun ProductItem(
         isBought = product.status == ProductStatus.BOUGHT
         isPlanned = product.status == ProductStatus.PLANNED
     }
-//    val statusChanged = remember { mutableStateOf(false) }
-//    when {
-//        statusChanged.value -> {
-//            when (product.status) {
-//                ProductStatus.BOUGHT -> {
-//                    isBought = true
-//                    isPlanned = false
-//                }
-//
-//                ProductStatus.PLANNED -> {
-//                    isBought = false
-//                    isPlanned = true
-//                }
-//
-//                ProductStatus.NONE -> {
-//                    isBought = false
-//                    isPlanned = false
-//                }
-//            }
-//            statusChanged.value = false
-//        }
-//    }
 
     val openModal = remember { mutableStateOf(false) }
 

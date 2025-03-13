@@ -11,9 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import ru.hihit.cobuy.ui.components.navigation.NavGraph
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.AuthViewModel
-import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.GroupsViewModel
-import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
 
 
