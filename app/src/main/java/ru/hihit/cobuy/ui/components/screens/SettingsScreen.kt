@@ -56,6 +56,15 @@ fun SettingsScreen(
         SettingKeys.THEME_SYSTEM to stringResource(R.string.theme_system)
     )
 
+    val productCardTypeStr = stringResource(R.string.product_card_type)
+    val productCartTypeDescStr = stringResource(R.string.product_card_type_description)
+
+    val productCartStrMap = mapOf(
+        SettingKeys.PRODUCT_CARD_TYPE_STANDARD to stringResource(R.string.product_card_type_standard),
+        SettingKeys.PRODUCT_CARD_TYPE_SHOPPING_LIST to stringResource(R.string.product_card_type_shopping_list),
+//        SettingKeys.PRODUCT_CARD_TYPE_PICTURE to stringResource(R.string.product_card_type_picture)
+    )
+
     Scaffold(
         topBar = {
             TopAppBarImpl(
@@ -107,13 +116,6 @@ fun SettingsScreen(
                 title = { Text(text = showCompletedListsStr) },
                 summary = { Text(text = if (it) onRes else offRes) },
             ) {}
-//            listPreference(
-//                key = "list_alert_dialog_preference",
-//                defaultValue = "Alpha",
-//                values = listOf("Alpha", "Beta", "Canary"),
-//                title = { Text(text = "List preference (alert dialog)") },
-//                summary = { Text(text = it) },
-//            )
             listPreference(
                 key = SettingKeys.THEME,
                 defaultValue = SettingKeys.THEME_SYSTEM,
@@ -121,7 +123,16 @@ fun SettingsScreen(
                 valueToText = { AnnotatedString(themeStrMap[it] ?: "") },
                 title = { Text(text = themeStr) },
                 summary = { Text(text = themeStrMap[it] ?: "") },
-                type = ListPreferenceType.DROPDOWN_MENU,
+                type = ListPreferenceType.ALERT_DIALOG,
+            )
+            listPreference(
+                key = SettingKeys.PRODUCT_CARD_TYPE,
+                defaultValue = SettingKeys.PRODUCT_CARD_TYPE_STANDARD,
+                values = productCartStrMap.keys.toList(),
+                valueToText = { AnnotatedString(productCartStrMap[it] ?: "") },
+                title = { Text(text = productCardTypeStr) },
+                summary = { Text(text = productCartTypeDescStr) },
+                type = ListPreferenceType.ALERT_DIALOG,
             )
         }
     }

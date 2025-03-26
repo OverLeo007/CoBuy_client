@@ -1,27 +1,18 @@
 package ru.hihit.cobuy.ui.theme
 
 import android.app.Activity
-import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
-import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.Preferences
 import ru.hihit.cobuy.ui.components.viewmodels.SettingKeys
 
@@ -46,7 +37,9 @@ private val LightColorScheme = lightColorScheme(
 
     surfaceTint = LightDivider,
 
-    error = LightError
+    error = LightError,
+
+    surfaceBright = LightInfo
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -70,7 +63,9 @@ private val DarkColorScheme = darkColorScheme(
 
     surfaceTint = DarkDivider,
 
-    error = DarkError
+    error = DarkError,
+
+    surfaceBright = DarkInfo
 )
 
 

@@ -1,8 +1,14 @@
 package ru.hihit.cobuy.ui.components.screens
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +25,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -31,6 +39,7 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -48,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -64,7 +74,6 @@ import ru.hihit.cobuy.ui.components.composableElems.FloatingActionButtonImpl
 import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
-import ru.hihit.cobuy.ui.components.composableElems.UniversalModal
 import ru.hihit.cobuy.ui.components.composableElems.modals.groupScreen.AddListModal
 import ru.hihit.cobuy.ui.components.composableElems.modals.groupScreen.EditModal
 import ru.hihit.cobuy.ui.components.navigation.Route
@@ -252,9 +261,6 @@ fun GroupScreen(
                     items = filteredLists,
                     key = { it.id }
                 ) { list ->
-                    Log.d("GroupScreen Lists",
-                        (list.checkedProductsCount == list.productsCount).toString()
-                    )
                     val isArchived = remember { mutableStateOf(list.hidden) }
                     val isDeleted = remember { mutableStateOf(false) }
 
@@ -282,7 +288,6 @@ fun GroupScreen(
                                                     "Список удален",
                                                     Toast.LENGTH_SHORT
                                                 ).show()
-                                                isDeleted.value = false
                                             }
 
                                             SnackbarResult.ActionPerformed -> {
@@ -294,7 +299,37 @@ fun GroupScreen(
 
                                 }
 
-                                SwipeToDismissBoxValue.StartToEnd -> return@rememberSwipeToDismissBoxState false
+                                SwipeToDismissBoxValue.StartToEnd -> {
+                                    if (!isArchived.value) {
+                                        Log.d("GroupScreen", "onArchiveList")
+                                    }
+                                    isArchived.value = true
+                                    vm.onArchiveList(list.id)
+                                    snackBarScope.launch {
+                                        val result = snackbarHostState
+                                            .showSnackbar(
+                                                message = "Список \"${list.name}\" будет архивирован",
+                                                actionLabel = "Отмена",
+                                                duration = SnackbarDuration.Long,
+                                                withDismissAction = true
+                                            )
+                                        when (result) {
+                                            SnackbarResult.Dismissed -> {
+                                                vm.onArchiveList(list.id)
+                                                Toast.makeText(
+                                                    context,
+                                                    "Список архивирован",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                isArchived.value = false
+                                            }
+
+                                            SnackbarResult.ActionPerformed -> {
+                                                isArchived.value = false
+                                            }
+                                        }
+                                    }
+                                }
                                 SwipeToDismissBoxValue.Settled -> return@rememberSwipeToDismissBoxState true
                             }
                             return@rememberSwipeToDismissBoxState true
@@ -320,13 +355,16 @@ fun GroupScreen(
                         onClick = {
                             navHostController.navigate(Route.List + "/${list.id}")
                         },
+                        placementModifier = Modifier.animateItem(),
                         onDelete = { vm.onDeleteList(it) },
                         isDeleted = isDeleted,
                         isArchived = isArchived,
                         dismissState = dismissState
                     )
                 }
-                val hiddenListsCount = lists.filter {list -> list.productsCount > 0 && list.checkedProductsCount == list.productsCount}.size
+                val hiddenListsCount = lists.filter {
+                    list -> list.productsCount > 0 && list.checkedProductsCount == list.productsCount
+                }.size
                 if (!showCompletedListsPreference && hiddenListsCount > 0) {
                     footerPreference(
                         key = "footer",
@@ -352,63 +390,99 @@ fun ListItem(
     fillPercents: Float,
     onClick: () -> Unit = {},
     onDelete: (Int) -> Unit = {},
+    @SuppressLint("ModifierParameter") placementModifier: Modifier,
     isDeleted: MutableState<Boolean>,
     isArchived: MutableState<Boolean>,
     dismissState: SwipeToDismissBoxState
 ) {
-
-    val openModal = remember { mutableStateOf(false) }
-    val modalButtons = mapOf<String, (ListData) -> Unit>(
-        stringResource(R.string.delete_word) to {
-            onDelete(it.id)
-            openModal.value = false
-        }
-    )
-
-    when {
-        openModal.value ->
-            UniversalModal(
-                subject = listItem,
-                buttons = modalButtons,
-                onDismiss = { openModal.value = false }
-            )
-    }
-
-    Box(
-        Modifier
-            .combinedClickable(onClick = onClick, onLongClick = { openModal.value = true })
+    AnimatedVisibility(
+        modifier = placementModifier,
+        visible = !(isDeleted.value || isArchived.value),
+        enter = fadeIn(
+            animationSpec = tween(durationMillis = 150)
+        ),
+        exit = fadeOut(
+            animationSpec = tween(durationMillis = 150)
+        )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp, bottom = 12.dp, start = 16.dp, end = 16.dp)
+        SwipeToDismissBox(
+            state = dismissState,
+            backgroundContent = {
+                DismissListItemBackground(dismissState)
+            }
         ) {
-            Text(
-                text = listItem.name,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (fillPercents == 1F) 0.5f else 1F)
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                LinearProgressIndicator(
-                    progress = { fillPercents },
-                    modifier = Modifier.fillMaxWidth(0.8F),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (fillPercents == 1F) 0.5f else 1F),
-                    strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap
-                )
-                Spacer(modifier = Modifier.size(8.dp))
-                Text(
-                    text = "${(fillPercents * 100).roundToInt()}%",
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (fillPercents == 1F) 0.5f else 1F)
-                )
+            Column {
+                Box(
+                    Modifier
+                        .combinedClickable(onClick = onClick)
+                        .background(MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp, bottom = 12.dp, start = 16.dp, end = 16.dp)
+                    ) {
+                        Text(
+                            text = listItem.name,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (fillPercents == 1F) 0.5f else 1F)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            LinearProgressIndicator(
+                                progress = { fillPercents },
+                                modifier = Modifier.fillMaxWidth(0.8F),
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (fillPercents == 1F) 0.5f else 1F),
+                                strokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap
+                            )
+                            Spacer(modifier = Modifier.size(8.dp))
+                            Text(
+                                text = "${(fillPercents * 100).roundToInt()}%",
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (fillPercents == 1F) 0.5f else 1F)
+                            )
+                        }
+                    }
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
             }
         }
     }
-    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
+
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DismissListItemBackground(dismissState: SwipeToDismissBoxState) {
+    val color = when (dismissState.dismissDirection) {
+        SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
+        SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.surfaceBright
+        else -> Color.Transparent
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color)
+            .padding(12.dp, 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Icon(
+            painter = painterResource(R.drawable.archive),
+            tint = Color.White,
+            contentDescription = "Archive"
+        )
+        Spacer(modifier = Modifier)
+        Icon(
+            Icons.Default.Delete,
+            tint = Color.White,
+            contentDescription = "delete"
+        )
+    }
+}
 
 
 

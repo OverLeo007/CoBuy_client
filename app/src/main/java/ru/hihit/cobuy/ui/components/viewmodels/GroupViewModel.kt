@@ -75,7 +75,7 @@ class GroupViewModel(
                 EventType.Delete -> navHostController.navigate(Route.Groups)
                 EventType.Create -> {}
             }
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Log.e("GroupViewModel", "json from ws event is not serializable to GroupChangedEvent: $event")
             return
         }
@@ -316,6 +316,10 @@ class GroupViewModel(
             className + "GroupChanged",
             className + "ListChanged"
         )
+    }
+
+    fun onArchiveList(listId: Int) {
+        Log.d("GroupViewModel", "onArchiveList: $listId")
     }
 
 }

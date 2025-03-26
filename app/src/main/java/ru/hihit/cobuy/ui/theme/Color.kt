@@ -11,6 +11,7 @@ val LightText = Color(0xFF2D2D2D)
 val LightLightText = Color(0xFF6F6F6F)
 val LightDivider = Color(0xFFC7C1B8)
 val LightError = Color(0xFFEF8888)
+val LightInfo = Color(0xFF5EDEDE)
 
 // Dark theme colors
 val DarkBackground = Color(0xFF585653)
@@ -21,6 +22,7 @@ val DarkText = Color(0xFFF4F4F4)
 val DarkLightText = Color(0xFFC5C5C5)
 val DarkDivider = Color(0xFF888178)
 val DarkError = Color(0xFFC66666)
+val DarkInfo = Color(0xFF59A3A3)
 
 val productsColors = arrayOf(
     Color(0xFFD9D9D9),
