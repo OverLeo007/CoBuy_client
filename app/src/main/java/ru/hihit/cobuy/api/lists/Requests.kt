@@ -1,7 +1,8 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
 package ru.hihit.cobuy.api.lists
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import ru.hihit.cobuy.utils.IntAsBooleanSerializer
 
 @Serializable
 data class CreateListRequest(
@@ -11,5 +12,7 @@ data class CreateListRequest(
 
 @Serializable
 data class UpdateListRequest(
-    val name: String
+    var name: String? = null,
+    @Serializable(with = IntAsBooleanSerializer::class)
+    var hidden: Boolean? = null
 )

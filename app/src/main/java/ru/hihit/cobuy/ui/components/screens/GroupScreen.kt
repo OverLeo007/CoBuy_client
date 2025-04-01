@@ -46,7 +46,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,8 +64,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.footerPreference
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.ListData
@@ -78,7 +77,6 @@ import ru.hihit.cobuy.ui.components.composableElems.modals.groupScreen.AddListMo
 import ru.hihit.cobuy.ui.components.composableElems.modals.groupScreen.EditModal
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.GroupViewModel
-import ru.hihit.cobuy.ui.components.viewmodels.SettingKeys
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -97,15 +95,8 @@ fun GroupScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val snackBarScope = rememberCoroutineScope()
 
-    val preferences = LocalPreferenceFlow.current.collectAsStateWithLifecycle()
-    val showCompletedListsPreference = preferences.value.asMap()
-        .getOrDefault(SettingKeys.SHOW_COMPLETED_LISTS, false) as Boolean
-    preferences.value.let {
-        Log.d("GroupScreen", "preferences: $showCompletedListsPreference")
-    }
-
     val group by vm.group.collectAsState()
-    val lists by vm.lists.collectAsState()
+    val lists by vm.filteredLists.collectAsStateWithLifecycle()
 
     val openEditModal = remember {
         mutableStateOf(false)
@@ -115,12 +106,18 @@ fun GroupScreen(
         mutableStateOf(false)
     }
 
-    var isArchive by remember { mutableStateOf(false) }
+    val isArchive by vm.showArchived.collectAsState()
     var archiveIcon = if (isArchive) {
         painterResource(R.drawable.unarchive)
     } else {
         painterResource(R.drawable.archive)
     }
+    var onArchiveButtonMessage: String = if (isArchive) {
+        stringResource(R.string.show_active_lists)
+    } else {
+        stringResource(R.string.show_archived_lists)
+    }
+
     val dismissStateScope = rememberCoroutineScope()
 
 
@@ -147,6 +144,8 @@ fun GroupScreen(
         )
 
     }
+
+
 
     Scaffold(
         topBar = {
@@ -208,29 +207,18 @@ fun GroupScreen(
         floatingActionButton = {
             Column(
                 verticalArrangement = Arrangement.Bottom,
-//                modifier = Modifier.align(Alignment.BottomEnd)
             ) {
 
                 FloatingActionButtonImpl(
                     onClick = {
-                        isArchive = !isArchive
-                        when (isArchive) {
-
-                            true -> snackBarScope.launch {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar(
-                                    message = "Просмотр арихивированных списков",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
-
-                            false -> snackBarScope.launch {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                                snackbarHostState.showSnackbar(
-                                    message = "Просмотр активных списков",
-                                    duration = SnackbarDuration.Short
-                                )
-                            }
+                        vm.changeShowArchived()
+                        snackBarScope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            snackbarHostState.showSnackbar(
+                                message = onArchiveButtonMessage,
+                                duration = SnackbarDuration.Short,
+                                withDismissAction = true
+                            )
                         }
                     }
                 ) {
@@ -242,10 +230,7 @@ fun GroupScreen(
             }
         }
     ) { paddingValues ->
-        val filteredLists = lists.filter { list ->
-            list.hidden == isArchive &&
-                    !(list.productsCount > 0 && list.checkedProductsCount == list.productsCount && !showCompletedListsPreference)
-        }
+        Log.d("GroupScreen", "displaying lists: $lists")
         SwipeRefreshImpl(
             swipeState = swipeRefreshState,
             onRefresh = {
@@ -258,114 +243,28 @@ fun GroupScreen(
                 contentPadding = paddingValues
             ) {
                 items(
-                    items = filteredLists,
-                    key = { it.id }
+                    items = lists,
+                    key = { it.id.toString() }
                 ) { list ->
-                    val isArchived = remember { mutableStateOf(list.hidden) }
-                    val isDeleted = remember { mutableStateOf(false) }
-
-                    val dismissState = rememberSwipeToDismissBoxState(
-                        confirmValueChange = { value ->
-                            when (value) {
-                                SwipeToDismissBoxValue.EndToStart -> {
-                                    if (!isDeleted.value) {
-                                        Log.d("GroupScreen", "onDeleteList")
-                                    }
-                                    isDeleted.value = true
-                                    snackBarScope.launch {
-                                        val result = snackbarHostState
-                                            .showSnackbar(
-                                                message = "Список \"${list.name}\" будет удален",
-                                                actionLabel = "Отмена",
-                                                duration = SnackbarDuration.Long,
-                                                withDismissAction = true
-                                            )
-                                        when (result) {
-                                            SnackbarResult.Dismissed -> {
-                                                vm.onDeleteList(list.id)
-                                                Toast.makeText(
-                                                    context,
-                                                    "Список удален",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-
-                                            SnackbarResult.ActionPerformed -> {
-                                                isDeleted.value = false
-                                            }
-                                        }
-                                    }
-
-
-                                }
-
-                                SwipeToDismissBoxValue.StartToEnd -> {
-                                    if (!isArchived.value) {
-                                        Log.d("GroupScreen", "onArchiveList")
-                                    }
-                                    isArchived.value = true
-                                    vm.onArchiveList(list.id)
-                                    snackBarScope.launch {
-                                        val result = snackbarHostState
-                                            .showSnackbar(
-                                                message = "Список \"${list.name}\" будет архивирован",
-                                                actionLabel = "Отмена",
-                                                duration = SnackbarDuration.Long,
-                                                withDismissAction = true
-                                            )
-                                        when (result) {
-                                            SnackbarResult.Dismissed -> {
-                                                vm.onArchiveList(list.id)
-                                                Toast.makeText(
-                                                    context,
-                                                    "Список архивирован",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                isArchived.value = false
-                                            }
-
-                                            SnackbarResult.ActionPerformed -> {
-                                                isArchived.value = false
-                                            }
-                                        }
-                                    }
-                                }
-                                SwipeToDismissBoxValue.Settled -> return@rememberSwipeToDismissBoxState true
-                            }
-                            return@rememberSwipeToDismissBoxState true
-                        },
-                        positionalThreshold = { it * 0.25f }
-                    )
-
-                    LaunchedEffect(isDeleted.value, isArchived.value) {
-                        if (!isDeleted.value || !isArchived.value) {
-                            dismissStateScope.launch {
-                                dismissState.snapTo(SwipeToDismissBoxValue.Settled)
-                            }
-                        }
-                    }
-
                     ListItem(
                         list,
-                        fillPercents = if (list.productsCount == 0 || list.checkedProductsCount == 0) {
-                            0f
-                        } else {
-                            list.checkedProductsCount.toFloat() / list.productsCount
-                        },
                         onClick = {
                             navHostController.navigate(Route.List + "/${list.id}")
                         },
                         placementModifier = Modifier.animateItem(),
                         onDelete = { vm.onDeleteList(it) },
-                        isDeleted = isDeleted,
-                        isArchived = isArchived,
-                        dismissState = dismissState
+                        onArchive = { vm.onArchiveList(it) },
+                        onUnarchive = { vm.onUnarchiveList(it) },
+                        dismissStateScope = dismissStateScope,
+                        showArchived = isArchive,
+                        snackbarScope = snackBarScope,
+                        snackbarHostState = snackbarHostState
                     )
                 }
                 val hiddenListsCount = lists.filter {
-                    list -> list.productsCount > 0 && list.checkedProductsCount == list.productsCount
+                    list -> list.isCompleted
                 }.size
-                if (!showCompletedListsPreference && hiddenListsCount > 0) {
+                if (!(vm.showCompleted.value) && hiddenListsCount > 0) {
                     footerPreference(
                         key = "footer",
                         summary = { Text(stringResource(R.string.hidden_lists_count) + " " + hiddenListsCount) },
@@ -387,17 +286,108 @@ fun GroupScreen(
 @Composable
 fun ListItem(
     listItem: ListData,
-    fillPercents: Float,
     onClick: () -> Unit = {},
     onDelete: (Int) -> Unit = {},
+    onArchive: (Int) -> Unit = {},
+    onUnarchive: (Int) -> Unit = {},
+    showArchived: Boolean = false,
     @SuppressLint("ModifierParameter") placementModifier: Modifier,
-    isDeleted: MutableState<Boolean>,
-    isArchived: MutableState<Boolean>,
-    dismissState: SwipeToDismissBoxState
+    snackbarScope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
+    dismissStateScope: CoroutineScope
 ) {
+    val context = LocalContext.current
+    val isArchived = remember { mutableStateOf(listItem.hidden) }
+    val isDeleted = remember { mutableStateOf(false) }
+
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            when (value) {
+                SwipeToDismissBoxValue.EndToStart -> {
+                    if (!isDeleted.value) {
+                        Log.d("GroupScreen", "onDeleteList")
+                    }
+                    isDeleted.value = true
+                    snackbarScope.launch {
+                        val result = showSnackbar(
+                            snackbarHostState,
+                            message = "Список \"${listItem.name}\" будет удален",
+                            actionLabel = "Отмена"
+                        )
+                        when (result) {
+                            SnackbarResult.Dismissed -> {
+                                onDelete(listItem.id)
+                                Toast.makeText(
+                                    context,
+                                    "Список удален",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+
+                            SnackbarResult.ActionPerformed -> {
+                                isDeleted.value = false
+                            }
+                        }
+                    }
+                }
+
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    val isUnarchiveAction = listItem.hidden
+                    isArchived.value = !isUnarchiveAction
+
+                    snackbarScope.launch {
+                        val message = if (isUnarchiveAction)
+                            "Список \"${listItem.name}\" будет удален из архива"
+                        else
+                            "Список \"${listItem.name}\" будет архивирован"
+
+                        val result = showSnackbar(
+                            snackbarHostState,
+                            message = message,
+                            actionLabel = "Отмена"
+                        )
+
+                        when (result) {
+                            SnackbarResult.Dismissed -> {
+                                if (isUnarchiveAction) {
+                                    onUnarchive(listItem.id)
+                                    Toast.makeText(context, "Список удален из архива", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    onArchive(listItem.id)
+                                    Toast.makeText(context, "Список архивирован", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            SnackbarResult.ActionPerformed -> {
+                                isArchived.value = isUnarchiveAction
+                            }
+                        }
+                    }
+                }
+                SwipeToDismissBoxValue.Settled -> return@rememberSwipeToDismissBoxState true
+            }
+            return@rememberSwipeToDismissBoxState true
+        },
+        positionalThreshold = { it * 0.25f }
+    )
+
+    LaunchedEffect(isDeleted.value, isArchived.value) {
+        if (!isDeleted.value || !isArchived.value) {
+            dismissStateScope.launch {
+                dismissState.snapTo(SwipeToDismissBoxValue.Settled)
+            }
+        }
+    }
+
+    val fillPercents: Float = if (listItem.productsCount == 0 || listItem.checkedProductsCount == 0) {
+        0f
+    } else {
+        listItem.checkedProductsCount.toFloat() / listItem.productsCount
+    }
+    Log.w("ListItem", "list ${listItem.name}: visible: ${!isDeleted.value && (isArchived.value == showArchived)}")
+
     AnimatedVisibility(
         modifier = placementModifier,
-        visible = !(isDeleted.value || isArchived.value),
+        visible = !isDeleted.value && (isArchived.value == showArchived),
         enter = fadeIn(
             animationSpec = tween(durationMillis = 150)
         ),
@@ -408,7 +398,7 @@ fun ListItem(
         SwipeToDismissBox(
             state = dismissState,
             backgroundContent = {
-                DismissListItemBackground(dismissState)
+                DismissListItemBackground(dismissState, showArchived)
             }
         ) {
             Column {
@@ -455,7 +445,10 @@ fun ListItem(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DismissListItemBackground(dismissState: SwipeToDismissBoxState) {
+fun DismissListItemBackground(
+    dismissState: SwipeToDismissBoxState,
+    isInArchive: Boolean = false
+) {
     val color = when (dismissState.dismissDirection) {
         SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
         SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.surfaceBright
@@ -470,10 +463,16 @@ fun DismissListItemBackground(dismissState: SwipeToDismissBoxState) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        val leftIcon = if (isInArchive) {
+            painterResource(R.drawable.unarchive)
+        } else {
+            painterResource(R.drawable.archive)
+        }
+
         Icon(
-            painter = painterResource(R.drawable.archive),
+            painter = leftIcon,
             tint = Color.White,
-            contentDescription = "Archive"
+            contentDescription = "Archive or Unarchive"
         )
         Spacer(modifier = Modifier)
         Icon(
@@ -485,6 +484,19 @@ fun DismissListItemBackground(dismissState: SwipeToDismissBoxState) {
 }
 
 
+suspend fun showSnackbar(
+    snackbarHostState: SnackbarHostState,
+    message: String,
+    actionLabel: String
+): SnackbarResult {
+    return snackbarHostState
+        .showSnackbar(
+            message = message,
+            actionLabel = actionLabel,
+            duration = SnackbarDuration.Long,
+            withDismissAction = true
+        )
+}
 
 
 

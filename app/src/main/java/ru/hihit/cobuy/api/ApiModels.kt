@@ -9,6 +9,8 @@ import kotlinx.serialization.json.Json
 import ru.hihit.cobuy.models.EventType
 import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.models.ProductStatusSerializer
+import ru.hihit.cobuy.serializers.ListDataSerializer
+import ru.hihit.cobuy.utils.IntAsBooleanSerializer
 import ru.hihit.cobuy.utils.UriSerializer
 
 
@@ -50,14 +52,18 @@ data class UserData(
         return result
     }
 }
-@Serializable
+
+@Serializable(with = ListDataSerializer::class)
 data class ListData(
     val id: Int = 0,
     var name: String = "",
     val groupId: Int = 0,
     var productsCount: Int = 0,
     var checkedProductsCount: Int = 0,
-    var hidden: Boolean = false
+    @Serializable(with = IntAsBooleanSerializer::class)
+    var hidden: Boolean = false,
+    @Transient
+    val isCompleted: Boolean = false
 )
 
 @Serializable

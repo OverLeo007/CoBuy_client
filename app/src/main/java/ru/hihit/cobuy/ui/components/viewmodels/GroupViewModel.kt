@@ -10,10 +10,18 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.pusher.client.channel.PusherEvent
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
+import me.zhanghai.compose.preference.Preferences
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.api.GroupChangedEvent
 import ru.hihit.cobuy.api.GroupData
@@ -27,6 +35,7 @@ import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.lists.CreateListRequest
+import ru.hihit.cobuy.api.lists.UpdateListRequest
 import ru.hihit.cobuy.models.EventType
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.getMultipartImageFromUri
@@ -35,8 +44,20 @@ import ru.hihit.cobuy.utils.toUri
 
 class GroupViewModel(
     private val groupId: Int,
-    private val navHostController: NavHostController
+    private val navHostController: NavHostController,
+    val preferencesFlow: Flow<Preferences>
 ) : PusherViewModel() {
+
+    val showArchived = MutableStateFlow(false)
+
+    val showCompleted = preferencesFlow.map {
+        it.asMap().getOrDefault(SettingKeys.SHOW_COMPLETED_LISTS, false) as Boolean
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Lazily,
+        initialValue = false
+    )
+
 
     var isGroupLoading = mutableStateOf(true)
     var isRefreshing = mutableStateOf(false)
@@ -44,13 +65,39 @@ class GroupViewModel(
 
     var group: MutableStateFlow<GroupData> =
         MutableStateFlow(GroupData(0, "", "".toUri(), "", 0, 0, 0, emptyList()))
-    var lists: MutableStateFlow<List<ListData>> = MutableStateFlow(emptyList())
+
+    private var _lists: MutableStateFlow<List<ListData>> = MutableStateFlow(emptyList())
+    val lists: StateFlow<List<ListData>> = _lists.asStateFlow()
+
+    val filteredLists: StateFlow<List<ListData>> = combine(
+        _lists,
+        showCompleted,
+        showArchived
+    ) { items, showCompleted, showArchived ->
+        items.filter { item ->
+             item.hidden == showArchived
+        }.filter { item ->
+            if (showCompleted) {
+                true
+            } else {
+                !item.isCompleted
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
 
 
     init {
         updateAll()
         subscribeToGroup()
         subscribeToLists()
+    }
+
+    fun changeShowArchived() {
+        Log.d("GroupViewModel", "Lists before change: ${filteredLists.value}")
+        showArchived.value = !showArchived.value
+        Log.d("GroupViewModel", "changeShowArchived: ${showArchived.value}")
+        Log.d("GroupViewModel", "Lists after change: ${filteredLists.value}")
     }
 
     private fun subscribeToGroup() {
@@ -76,7 +123,10 @@ class GroupViewModel(
                 EventType.Create -> {}
             }
         } catch (_: SerializationException) {
-            Log.e("GroupViewModel", "json from ws event is not serializable to GroupChangedEvent: $event")
+            Log.e(
+                "GroupViewModel",
+                "json from ws event is not serializable to GroupChangedEvent: $event"
+            )
             return
         }
     }
@@ -99,28 +149,33 @@ class GroupViewModel(
             Log.d(className, "Got list from ws: $eventData")
             when (eventData.type) {
                 EventType.Update -> {
-                    val curLists = lists.value.toMutableList()
+                    val curLists = _lists.value.toMutableList()
                     val listIndex = curLists.indexOfFirst { it.id == eventData.data.id }
                     if (listIndex != -1) {
                         curLists[listIndex] = eventData.data
-                        lists.value = curLists
+                        _lists.value = curLists
                     }
                 }
+
                 EventType.Delete -> {
-                    val curLists = lists.value.toMutableList()
+                    val curLists = _lists.value.toMutableList()
                     curLists.removeIf { it.id == eventData.data.id }
-                    lists.value = curLists
+                    _lists.value = curLists
                 }
+
                 EventType.Create -> {
-                    val curLists = lists.value.toMutableList()
+                    val curLists = _lists.value.toMutableList()
                     if (curLists.find { list -> list.id == eventData.data.id } == null) {
                         curLists.add(eventData.data)
                     }
-                    lists.value = curLists
+                    _lists.value = curLists
                 }
             }
         } catch (e: SerializationException) {
-            Log.e("GroupViewModel", "json from ws event is not serializable to ListChangedEvent: $event")
+            Log.e(
+                "GroupViewModel",
+                "json from ws event is not serializable to ListChangedEvent: $event"
+            )
             return
         }
 
@@ -139,8 +194,10 @@ class GroupViewModel(
                 response?.data?.let {
                     group.value = it
                     group.value.avaUrl?.let {
-                        group.value.avaUrl = group.value.avaUrl.toString().replace("public", "http://hihit.sytes.net/storage").toUri()  //FIXME remove this line
-                }
+                        group.value.avaUrl = group.value.avaUrl.toString()
+                            .replace("public", "http://hihit.sytes.net/storage")
+                            .toUri()  //FIXME remove this line
+                    }
                 }
                 Log.d("GroupViewModel", "getGroup: $response")
                 isGroupLoading.value = false
@@ -173,7 +230,7 @@ class GroupViewModel(
             groupId,
             callback = { response ->
                 response?.data?.let {
-                    lists.value = it
+                    _lists.value = it
                 }
                 Log.d("GroupViewModel", "getLists: $response")
             },
@@ -256,11 +313,11 @@ class GroupViewModel(
             callback = {
                 Log.d("GroupViewModel", "onAddList: $it")
                 it?.let {
-                    val curLists = lists.value.toMutableList()
+                    val curLists = _lists.value.toMutableList()
                     if (curLists.find { list -> list.id == it.data.id } == null) {
                         curLists.add(it.data)
                     }
-                    lists.value = curLists
+                    _lists.value = curLists
                 }
             },
             onError = { code, body ->
@@ -294,9 +351,9 @@ class GroupViewModel(
             toDelListId,
             callback = {
                 Log.d("GroupViewModel", "onDeleteList: $it")
-                val curLists = lists.value.toMutableList()
+                val curLists = _lists.value.toMutableList()
                 curLists.removeIf { list -> list.id == toDelListId }
-                lists.value = curLists
+                _lists.value = curLists
             },
             onError = { code, body ->
                 Log.e("GroupViewModel", "onDeleteList: $code $body")
@@ -320,6 +377,39 @@ class GroupViewModel(
 
     fun onArchiveList(listId: Int) {
         Log.d("GroupViewModel", "onArchiveList: $listId")
+        val list = _lists.value.find { it.id == listId }
+        list?.hidden = true
+        updateListArchiveState(list)
+    }
+
+    fun onUnarchiveList(listId: Int) {
+        Log.d("GroupViewModel", "onUnarchiveList: $listId")
+        val list = _lists.value.find { it.id == listId }
+        list?.hidden = false
+        updateListArchiveState(list)
+    }
+
+    private fun updateListArchiveState(list: ListData?) {
+        val logMsg = if (list?.hidden == true) {
+            "archived"
+        } else {
+            "unarchived"
+        }
+        list?.let { list ->
+            ListRequester.updateList(
+                list.id,
+                UpdateListRequest(
+                    list.name,
+                    list.hidden
+                ),
+                callback = {
+                    Log.d("GroupViewModel", "$logMsg list: $it")
+                },
+                onError = { code, body ->
+                    Log.e("GroupViewModel", "onUpdateListArchiveState: $code ${body?.charStream()}")
+                }
+            )
+        }
     }
 
 }

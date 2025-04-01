@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import me.zhanghai.compose.preference.LocalPreferenceFlow
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.ui.components.screens.AuthScreen
 import ru.hihit.cobuy.ui.components.screens.GroupScreen
@@ -112,6 +113,7 @@ fun NavGraph(
         }
     }
 
+    val preferencesFlow = LocalPreferenceFlow.current
 
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
     val density = LocalDensity.current
@@ -151,7 +153,8 @@ fun NavGraph(
             val vm: GroupViewModel = viewModel(key = Route.Group) {
                 GroupViewModel(
                     it.arguments?.getString("groupId")?.toInt() ?: 0,
-                    navHostController = navHostController
+                    navHostController = navHostController,
+                    preferencesFlow = preferencesFlow
                 )
             }
             GroupScreen(navHostController = navHostController, vm = vm)

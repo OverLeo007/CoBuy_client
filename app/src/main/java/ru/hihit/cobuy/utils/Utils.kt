@@ -10,15 +10,14 @@ import com.google.gson.reflect.TypeToken
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializer
-import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import ru.hihit.cobuy.BuildConfig
-import ru.hihit.cobuy.api.GroupChangedEvent
 import java.io.ByteArrayOutputStream
 import java.io.Serializable
 import java.lang.reflect.Type
@@ -71,6 +70,23 @@ object UriSerializer : KSerializer<Uri> {
 
     override fun deserialize(decoder: Decoder): Uri {
         return Uri.parse(decoder.decodeString())
+    }
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+object IntAsBooleanSerializer : KSerializer<Boolean> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("IntAsBoolean", PrimitiveKind.INT)
+
+    override fun serialize(encoder: Encoder, value: Boolean) {
+        encoder.encodeBoolean(value)
+    }
+
+    override fun deserialize(decoder: Decoder): Boolean {
+        return try {
+            decoder.decodeInt() == 1
+        } catch (e: Exception) {
+            decoder.decodeBoolean()
+        }
     }
 }
 

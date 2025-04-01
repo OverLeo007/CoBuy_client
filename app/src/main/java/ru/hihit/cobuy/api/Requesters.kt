@@ -400,7 +400,7 @@ private fun <T> launchRequest(
                 callback(response.body())
             } else {
                 val body: ResponseBody? = response.errorBody()
-                Log.e("Requester", "$errorMessage}")
+                Log.e("Requester", "$errorMessage ${response.code()}: ${body?.string()}")
                 onError(response.code(), body)
             }
         }

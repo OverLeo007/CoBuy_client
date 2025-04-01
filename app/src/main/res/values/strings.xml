@@ -64,5 +64,7 @@
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="hidden_lists_count">Lists hidden:</string>
+    <string name="show_archived_lists">Viewing archived lists</string>
+    <string name="show_active_lists">Viewing active lists</string>
 
 </resources>
