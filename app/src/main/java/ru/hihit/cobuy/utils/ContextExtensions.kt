@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.core.content.FileProvider
 import ru.hihit.cobuy.R
-import ru.hihit.cobuy.api.UserData
+import ru.hihit.cobuy.api.models.UserData
 import java.io.File
 import java.io.FileOutputStream
 

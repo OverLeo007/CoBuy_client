@@ -46,7 +46,7 @@ import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import ru.hihit.cobuy.R
-import ru.hihit.cobuy.api.GroupData
+import ru.hihit.cobuy.api.models.GroupData
 import ru.hihit.cobuy.ui.components.composableElems.FloatingActionButtonImpl
 import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
@@ -63,7 +63,6 @@ fun GroupsScreen(
     navHostController: NavHostController,
     vm: GroupsViewModel
 ) {
-    val context = LocalContext.current
     val cameraPermissionState = rememberPermissionState(permission = Manifest.permission.CAMERA)
 
     val isRefreshing by vm.isLoading.observeAsState(false)

@@ -25,7 +25,6 @@ fun MainScreen(
     val currentRoute = backStackEntry?.destination?.route
 
     val vms: HashMap<String, ViewModel> = HashMap()
-//    TODO: Добавить фабрики
     vms[Route.Groups] = viewModel(key = Route.Groups) { GroupsViewModel() }
     vms[Route.Settings] = viewModel(key = Route.Settings) { SettingsViewModel() }
     vms[Route.Authorization] = viewModel(key = Route.Authorization) { AuthViewModel() }

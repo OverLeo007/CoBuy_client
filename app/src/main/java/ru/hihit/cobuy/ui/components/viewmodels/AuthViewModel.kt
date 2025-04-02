@@ -6,12 +6,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import ru.hihit.cobuy.App
-import ru.hihit.cobuy.api.AuthRequester
 import ru.hihit.cobuy.api.auth.LoginRequest
 import ru.hihit.cobuy.api.auth.LoginResponse
 import ru.hihit.cobuy.api.auth.RegisterRequest
+import ru.hihit.cobuy.api.requesters.AuthRequester
 import ru.hihit.cobuy.utils.parseJson
-import ru.hihit.cobuy.utils.saveManyToPreferences
 import ru.hihit.cobuy.utils.saveToPreferences
 import ru.hihit.cobuy.utils.saveUserDataToPreferences
 

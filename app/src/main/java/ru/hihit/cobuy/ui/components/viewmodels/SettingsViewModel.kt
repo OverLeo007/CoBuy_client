@@ -2,7 +2,7 @@ package ru.hihit.cobuy.ui.components.viewmodels
 
 import androidx.lifecycle.ViewModel
 import ru.hihit.cobuy.App
-import ru.hihit.cobuy.api.UserData
+import ru.hihit.cobuy.api.models.UserData
 import ru.hihit.cobuy.utils.clearPreferences
 import ru.hihit.cobuy.utils.getUserDataFromPreferences
 

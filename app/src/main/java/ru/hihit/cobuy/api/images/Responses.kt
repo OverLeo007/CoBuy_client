@@ -1,8 +1,9 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
 package ru.hihit.cobuy.api.images
 
 import kotlinx.serialization.Serializable
-import ru.hihit.cobuy.api.GroupImageData
-import ru.hihit.cobuy.api.ProductImageData
+import ru.hihit.cobuy.api.models.GroupImageData
+import ru.hihit.cobuy.api.models.ProductImageData
 
 @Serializable
 data class GetGroupImageResponse(

@@ -11,15 +11,14 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.MutableStateFlow
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.R
-import ru.hihit.cobuy.api.GroupData
-import ru.hihit.cobuy.api.GroupRequester
-import ru.hihit.cobuy.api.MiscRequester
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
+import ru.hihit.cobuy.api.models.GroupData
+import ru.hihit.cobuy.api.requesters.GroupRequester
+import ru.hihit.cobuy.api.requesters.MiscRequester
 import ru.hihit.cobuy.models.Group
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.isJwt
 import ru.hihit.cobuy.utils.parseJson
-import ru.hihit.cobuy.utils.toUri
 
 class GroupsViewModel : ViewModel() {
 
@@ -142,14 +141,8 @@ class GroupsViewModel : ViewModel() {
         GroupRequester.getGroups(
             callback = { response ->
                 response?.data?.let { newGroups ->
-                    val updGroups = newGroups.map {groupData ->
-                        groupData.avaUrl?.let {
-                            groupData.avaUrl = groupData.avaUrl.toString().replace("public", "http://hihit.sytes.net/storage").toUri()  //FIXME remove this map
-                        }
-                        groupData
-                    }
-                    groups.value = updGroups
-                    onGroupsGet(updGroups)
+                    groups.value = newGroups
+                    onGroupsGet(newGroups)
                 }
                 isLoading.value = false
             },

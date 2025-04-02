@@ -9,20 +9,19 @@ import com.pusher.client.channel.PusherEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
 import okhttp3.MultipartBody
-import ru.hihit.cobuy.api.ImageRequester
-import ru.hihit.cobuy.api.ListChangedEvent
-import ru.hihit.cobuy.api.ListData
-import ru.hihit.cobuy.api.ListRequester
-import ru.hihit.cobuy.api.ProductChangedEvent
-import ru.hihit.cobuy.api.ProductData
-import ru.hihit.cobuy.api.ProductRequester
 import ru.hihit.cobuy.api.lists.UpdateListRequest
+import ru.hihit.cobuy.api.models.ListData
+import ru.hihit.cobuy.api.models.ProductData
 import ru.hihit.cobuy.api.products.CreateProductRequest
 import ru.hihit.cobuy.api.products.UpdateProductRequest
+import ru.hihit.cobuy.api.requesters.ImageRequester
+import ru.hihit.cobuy.api.requesters.ListRequester
+import ru.hihit.cobuy.api.requesters.ProductRequester
 import ru.hihit.cobuy.models.EventType
+import ru.hihit.cobuy.pusher.events.ListChangedEvent
+import ru.hihit.cobuy.pusher.events.ProductChangedEvent
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.getMultipartImageFromUri
 
@@ -81,7 +80,7 @@ class ListViewModel(
                     Log.w(className, "Its wrong event type for already created list")
                 }
             }
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Log.e(className, "json from ws event is not serializable to ListChangedEvent: $event")
             return
         }
@@ -123,7 +122,7 @@ class ListViewModel(
                     }
                 }
             }
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Log.e("GroupViewModel", "json from ws event is not serializable to GroupChangedEvent: $event")
             return
         }
@@ -222,7 +221,7 @@ class ListViewModel(
             ),
             callback = { response ->
                 Log.d("ListViewModel", "onProductEdited: $response")
-                updateAll()
+//                updateAll() // FIXME: Надо или нет хммм
             },
             onError = { code, body ->
                 Log.e("ListViewModel", "onProductEdited: $code $body")

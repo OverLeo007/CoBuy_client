@@ -18,7 +18,7 @@ import androidx.compose.ui.res.painterResource
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.defaultPreferenceFlow
-import ru.hihit.cobuy.api.AuthRequester
+import ru.hihit.cobuy.api.requesters.AuthRequester
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.screens.MainScreen
 import ru.hihit.cobuy.ui.theme.CoBuyTheme

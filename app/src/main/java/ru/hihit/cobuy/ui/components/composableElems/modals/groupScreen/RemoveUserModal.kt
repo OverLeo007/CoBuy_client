@@ -20,8 +20,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import ru.hihit.cobuy.R
-import ru.hihit.cobuy.api.GroupData
-import ru.hihit.cobuy.api.UserData
+import ru.hihit.cobuy.api.models.GroupData
+import ru.hihit.cobuy.api.models.UserData
 
 
 @Composable

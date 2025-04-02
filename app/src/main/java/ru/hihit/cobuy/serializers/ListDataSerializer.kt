@@ -8,8 +8,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.encoding.decodeStructure
 import kotlinx.serialization.encoding.encodeStructure
-import ru.hihit.cobuy.api.ListData
-import ru.hihit.cobuy.utils.IntAsBooleanSerializer
+import ru.hihit.cobuy.api.models.ListData
 
 object ListDataSerializer : KSerializer<ListData> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("ListData") {

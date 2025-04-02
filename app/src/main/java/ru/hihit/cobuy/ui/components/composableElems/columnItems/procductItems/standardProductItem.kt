@@ -51,9 +51,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ru.hihit.cobuy.R
-import ru.hihit.cobuy.api.ProductData
+import ru.hihit.cobuy.api.models.ProductData
 import ru.hihit.cobuy.models.ProductStatus
-import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.NewProductModal
+import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.ProductModal
 import ru.hihit.cobuy.ui.theme.getColorByHash
 import ru.hihit.cobuy.utils.getFromPreferences
 
@@ -92,7 +92,7 @@ fun StandardProductItem(
 
     when {
         openModal.value ->
-            NewProductModal(
+            ProductModal(
                 product = product,
                 onSubmit = {
                     onEdited(it)

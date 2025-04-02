@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -47,9 +48,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ru.hihit.cobuy.R
-import ru.hihit.cobuy.api.ProductData
+import ru.hihit.cobuy.api.models.ProductData
 import ru.hihit.cobuy.models.ProductStatus
-import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.NewProductModal
+import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.ProductModal
 import ru.hihit.cobuy.ui.theme.getColorByHash
 import ru.hihit.cobuy.utils.getFromPreferences
 
@@ -90,7 +91,7 @@ fun CompactProductItem(
 
     when {
         openModal.value ->
-            NewProductModal(
+            ProductModal(
                 product = product,
                 onSubmit = {
                     onEdited(it)
@@ -121,7 +122,7 @@ fun CompactProductItem(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp) // TODO: Подобрать высоту
+                        .height(70.dp)
                         .combinedClickable(onClick = { openModal.value = true })
                         .background(MaterialTheme.colorScheme.surface),
                     verticalAlignment = Alignment.CenterVertically,
@@ -148,10 +149,16 @@ fun CompactProductItem(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Column {
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f, fill = false)  // Занимает доступное место, но не вытесняет кнопку
+                                    .padding(end = 8.dp),  // Отступ от кнопки
+                            ) {
                                 Text(
                                     product.name,
-                                    style = MaterialTheme.typography.titleLarge
+                                    style = MaterialTheme.typography.titleMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                                 Text(
                                     product.description,
@@ -166,7 +173,8 @@ fun CompactProductItem(
                                     val newStatus = if (isBought) ProductStatus.NONE else ProductStatus.BOUGHT
                                     updateStatus(newStatus)
                                 },
-                                enabled = product.buyer == null || context.getFromPreferences("user_id", -1) == product.buyer.id
+                                enabled = product.buyer == null || context.getFromPreferences("user_id", -1) == product.buyer.id,
+                                modifier = Modifier.size(48.dp)
                             ) {
                                 Crossfade(targetState = isBought || isPlanned,
                                     label = "Buy button anim"
@@ -187,115 +195,6 @@ fun CompactProductItem(
                 }
                 HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
             }
-//            Card(
-//                Modifier
-//                    .height(200.dp)
-//                    .padding(PaddingValues(bottom = 8.dp)),
-//                colors = CardDefaults.cardColors()
-//                    .copy(containerColor = MaterialTheme.colorScheme.primaryContainer),
-//                shape = RoundedCornerShape(24.dp),
-//            ) {
-//                Row(
-//                    Modifier.combinedClickable(
-//                        onClick = { openModal.value = true },
-//                        onLongClick = { })
-//                ) {
-//                    Box(
-//                        modifier = Modifier
-//                            .weight(0.1f)
-//                            .background(getColorByHash(product.name))
-//                            .fillMaxHeight()
-//                    ) {
-//                        Text("")
-//                    }
-//                    Box(
-//                        modifier = Modifier
-//                            .weight(0.9f)
-//                            .fillMaxHeight()
-//                            .padding(
-//                                PaddingValues(
-//                                    start = 8.dp,
-//                                    end = 8.dp,
-//                                    top = 4.dp,
-//                                    bottom = 4.dp
-//                                )
-//                            )
-//                    ) {
-//                        Column(
-//                            modifier = Modifier
-//
-//                        ) {
-//                            Text(product.name, style = MaterialTheme.typography.titleLarge)
-//                            HorizontalDivider(
-//                                modifier = Modifier.fillMaxWidth(0.3F),
-//                                color = MaterialTheme.colorScheme.surfaceTint
-//                            )
-//                            Text(
-//                                product.description,
-//                                maxLines = 3,
-//                                style = MaterialTheme.typography.bodyMedium,
-//                                overflow = TextOverflow.Ellipsis
-//                            )
-//
-//                        }
-//                        Row(
-//                            horizontalArrangement = Arrangement.SpaceBetween,
-//                            verticalAlignment = Alignment.CenterVertically,
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .align(Alignment.BottomCenter)
-//                        ) {
-//                            Text(
-//                                modifier = Modifier.fillMaxWidth(0.5F),
-//                                text = product.price.toString() + "₽", //FIXME Валюту надо выбирать в настройках
-//                                style = MaterialTheme.typography.bodyLarge.copy(fontSize = 24.sp)
-//                            )
-//
-//                            val context = LocalContext.current
-//                            if (product.buyer == null || context.getFromPreferences("user_id", -1) == product.buyer.id) {
-//                                Column {
-//                                    val buyButtonColor = if (isBought) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
-//                                    val planButtonColor = if (isPlanned) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
-//
-//                                    Button(
-//                                        modifier = Modifier.fillMaxWidth(),
-//                                        onClick = {
-//                                            val newStatus = if (isBought) ProductStatus.NONE else ProductStatus.BOUGHT
-//                                            updateStatus(newStatus)
-//                                        },
-//                                        colors = ButtonDefaults.buttonColors(containerColor = buyButtonColor),
-//                                        border = if (isBought) null else BorderStroke(1.dp, color = MaterialTheme.colorScheme.surfaceTint),
-//                                        shape = RoundedCornerShape(8.dp),
-//                                        contentPadding = PaddingValues(12.dp)
-//                                    ) {
-//                                        Text(if (isBought) stringResource(id = R.string.bought_word) else stringResource(id = R.string.buy_word))
-//                                    }
-//
-//                                    Button(
-//                                        modifier = Modifier.fillMaxWidth(),
-//                                        onClick = {
-//                                            val newStatus = if (isPlanned) ProductStatus.NONE else ProductStatus.PLANNED
-//                                            updateStatus(newStatus)
-//                                        },
-//                                        colors = ButtonDefaults.buttonColors(containerColor = planButtonColor),
-//                                        border = if (isPlanned) null else BorderStroke(1.dp, color = MaterialTheme.colorScheme.surfaceTint),
-//                                        shape = RoundedCornerShape(8.dp),
-//                                        contentPadding = PaddingValues(12.dp)
-//                                    ) {
-//                                        Text(if (isPlanned) stringResource(id = R.string.planned_word) else stringResource(id = R.string.plan_word))
-//                                    }
-//                                }
-//                            } else {
-//                                val statusWord = if (product.status == ProductStatus.BOUGHT) stringResource(id = R.string.bought_by_word) else stringResource(id = R.string.planned_by_word)
-//                                Text(
-//                                    text = statusWord + ' ' + product.buyer.name,
-//                                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp)
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
     }
 

@@ -36,7 +36,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -61,6 +60,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -80,33 +80,39 @@ import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.core.text.isDigitsOnly
 import ru.hihit.cobuy.R
-import ru.hihit.cobuy.api.ProductData
+import ru.hihit.cobuy.api.models.ProductData
 import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
+@ExperimentalComposeUiApi
 @Composable
-fun NewAddProductModal(
+fun ProductModal(
+    product: ProductData = ProductData(),
     onSubmit: (ProductData) -> Unit = {},
     onDismiss: () -> Unit = {},
+    onImageSelected: (ProductData) -> Unit = {},
+    namePlaceholder: String = stringResource(R.string.product_name),
+    descriptionPlaceholder: String = stringResource(R.string.product_description)
 ) {
-
-    val context = LocalContext.current
-
-    val product = ProductData()
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    var nameText by remember { mutableStateOf("test") }
+    val context = LocalContext.current
+
+    var isNameCorrect by remember { mutableStateOf(true) }
+
+    var nameText by remember { mutableStateOf(if (product.name == "") namePlaceholder else product.name) }
     var isNameEditing by remember { mutableStateOf(false) }
 
-    var descriptionText by remember { mutableStateOf("test") }
+    var descriptionText by remember { mutableStateOf(if (product.description == "") descriptionPlaceholder else product.description) }
 
-    var quantity by remember { mutableIntStateOf(10) }
+    var quantity by remember { mutableIntStateOf(product.quantity ?: 0) } // TODO: product.quantity
 
-    var price by remember { mutableIntStateOf(10) }
+    var price by remember { mutableIntStateOf(product.price ?: 0) }
 
+    var isImageFullScreen by remember { mutableStateOf(false) }
 
     var imageUri by remember { mutableStateOf(product.productImgUrl) }
     val launcher =
@@ -115,7 +121,6 @@ fun NewAddProductModal(
                 imageUri = it
             }
         }
-
 
     val tempImageUri = remember {
         mutableStateOf(
@@ -144,6 +149,13 @@ fun NewAddProductModal(
         }
     }
 
+
+    when {
+        !isNameEditing -> {
+            HideKeyboardFrom()
+        }
+    }
+
     var isPhotoButtonsVisible by remember { mutableStateOf(false) }
     val animDuration = 150
 
@@ -151,12 +163,12 @@ fun NewAddProductModal(
 
 
 
-
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = LocalConfiguration.current.screenHeightDp.dp * 0.8F),
+//                .heightIn(min = LocalConfiguration.current.screenHeightDp.dp * 0.8F),
+                .heightIn(max = screenHeight * 0.8F),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
             colors = CardDefaults.cardColors().copy(
@@ -197,8 +209,7 @@ fun NewAddProductModal(
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
                                         unfocusedContainerColor = MaterialTheme.colorScheme.primaryContainer
-                                    ),
-                                    placeholder = { Text(stringResource(id = R.string.product_name)) },
+                                    )
                                 )
                             }
                         },
@@ -238,13 +249,18 @@ fun NewAddProductModal(
                                 .pointerInput(Unit) {
                                     detectTapGestures(
                                         onTap = {
+//                                        launcher.launch("image/*")
                                             isPhotoButtonsVisible = !isPhotoButtonsVisible
                                         },
+                                        onLongPress = {
+                                            isImageFullScreen = true
+                                        }
                                     )
                                 },
-                            name = if (nameText == "") "Click to put the image of product" else nameText,
-                            isFullText = nameText == "",
+                            name = nameText,
                             contentScale = ContentScale.Crop,
+                            isFullScreen = isImageFullScreen,
+                            onFullScreenChange = { isImageFullScreen = it }
                         )
                     }
                     AnimatedVisibility(
@@ -353,12 +369,12 @@ fun NewAddProductModal(
                     TextField(
                         value = descriptionText,
                         onValueChange = { descriptionText = it },
-                        label = { Text(stringResource(id = R.string.product_description)) },
+                        label = { Text("Описание") },
                         maxLines = 5,
                         minLines = 5,
                         modifier = Modifier
-                            .animateContentSize()
                             .fillMaxWidth()
+                            .animateContentSize()
                             .clickable {
                                 focusManager.clearFocus()
                                 keyboardController?.hide()
@@ -414,6 +430,7 @@ fun NewAddProductModal(
                                 textAlign = TextAlign.Center,
                             )
                         )
+
                         OutlinedTextField(
                             modifier = Modifier.weight(0.5F),
                             singleLine = true,
@@ -430,12 +447,15 @@ fun NewAddProductModal(
                     }
                     Button(
                         onClick = {
-                            Log.d("ProductModal", "Submit button clicked, photo: $imageUri")
+                            if (imageUri != product.productImgUrl) {
+                                onImageSelected(
+                                    product.copy(productImgUrl = imageUri)
+                                )
+                            }
                             onSubmit(
                                 product.copy(
                                     name = nameText,
                                     description = descriptionText,
-                                    productImgUrl = imageUri,
                                     quantity = quantity,
                                     price = price,
                                 )
@@ -452,6 +472,15 @@ fun NewAddProductModal(
 
         }
     }
+}
+
+
+@Composable
+fun HideKeyboardFrom() {
+    val context = LocalContext.current
+    val view = LocalView.current
+    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    imm.hideSoftInputFromWindow(view.windowToken, 0)
 }
 
 

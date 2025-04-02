@@ -2,7 +2,7 @@
 package ru.hihit.cobuy.api.lists
 
 import kotlinx.serialization.Serializable
-import ru.hihit.cobuy.utils.IntAsBooleanSerializer
+import ru.hihit.cobuy.serializers.IntAsBooleanSerializer
 
 @Serializable
 data class CreateListRequest(

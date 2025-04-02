@@ -1,8 +1,9 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
 package ru.hihit.cobuy.api.auth
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import ru.hihit.cobuy.api.UserData
+import ru.hihit.cobuy.api.models.UserData
 
 @Serializable
 data class RegisterResponse(

@@ -1,4 +1,3 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
 package ru.hihit.cobuy.api.images
-
-import kotlinx.serialization.Serializable
 

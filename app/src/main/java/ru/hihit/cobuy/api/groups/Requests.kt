@@ -1,3 +1,4 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
 package ru.hihit.cobuy.api.groups
 
 import kotlinx.serialization.Serializable

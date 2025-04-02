@@ -1,7 +1,8 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
 package ru.hihit.cobuy.api.products
 
 import kotlinx.serialization.Serializable
-import ru.hihit.cobuy.api.ProductData
+import ru.hihit.cobuy.api.models.ProductData
 
 @Serializable
 data class CreateProductResponse(

@@ -60,38 +60,6 @@ data class MutablePair<out A, out B>(
 }
 
 
-
-@OptIn(ExperimentalSerializationApi::class)
-@Serializer(forClass = Uri::class)
-object UriSerializer : KSerializer<Uri> {
-    override fun serialize(encoder: Encoder, value: Uri) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: Decoder): Uri {
-        return Uri.parse(decoder.decodeString())
-    }
-}
-
-@OptIn(ExperimentalSerializationApi::class)
-object IntAsBooleanSerializer : KSerializer<Boolean> {
-    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("IntAsBoolean", PrimitiveKind.INT)
-
-    override fun serialize(encoder: Encoder, value: Boolean) {
-        encoder.encodeBoolean(value)
-    }
-
-    override fun deserialize(decoder: Decoder): Boolean {
-        return try {
-            decoder.decodeInt() == 1
-        } catch (e: Exception) {
-            decoder.decodeBoolean()
-        }
-    }
-}
-
-
-
 fun prepareBitmapToRequest(bitmap: Bitmap, fileName: String, maxSizeInMB: Int = 5): MultipartBody.Part {
     val maxSizeInBytes = maxSizeInMB * 1024 * 1024
     var quality = 100

@@ -55,7 +55,7 @@ import ru.hihit.cobuy.ui.components.composableElems.FloatingActionButtonImpl
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.composableElems.columnItems.procductItems.UniversalListItem
-import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.NewAddProductModal
+import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.AddProductModal
 import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.SettingKeys
 
@@ -95,7 +95,7 @@ fun ListScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     when {
-        openAddProductModal.value -> NewAddProductModal(
+        openAddProductModal.value -> AddProductModal(
             onDismiss = { openAddProductModal.value = false },
             onSubmit = {
                 vm.onProductAdded(context, it)

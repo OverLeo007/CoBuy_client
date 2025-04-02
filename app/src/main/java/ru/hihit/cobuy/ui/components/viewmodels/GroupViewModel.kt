@@ -23,20 +23,20 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.SerializationException
 import me.zhanghai.compose.preference.Preferences
 import ru.hihit.cobuy.App
-import ru.hihit.cobuy.api.GroupChangedEvent
-import ru.hihit.cobuy.api.GroupData
-import ru.hihit.cobuy.api.GroupRequester
-import ru.hihit.cobuy.api.ImageRequester
-import ru.hihit.cobuy.api.ListChangedEvent
-import ru.hihit.cobuy.api.ListData
-import ru.hihit.cobuy.api.ListRequester
-import ru.hihit.cobuy.api.MiscRequester
-import ru.hihit.cobuy.api.UserData
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.lists.CreateListRequest
 import ru.hihit.cobuy.api.lists.UpdateListRequest
+import ru.hihit.cobuy.api.models.GroupData
+import ru.hihit.cobuy.api.models.ListData
+import ru.hihit.cobuy.api.models.UserData
+import ru.hihit.cobuy.api.requesters.GroupRequester
+import ru.hihit.cobuy.api.requesters.ImageRequester
+import ru.hihit.cobuy.api.requesters.ListRequester
+import ru.hihit.cobuy.api.requesters.MiscRequester
 import ru.hihit.cobuy.models.EventType
+import ru.hihit.cobuy.pusher.events.GroupChangedEvent
+import ru.hihit.cobuy.pusher.events.ListChangedEvent
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.getMultipartImageFromUri
 import ru.hihit.cobuy.utils.makeShareQrIntent
@@ -171,7 +171,7 @@ class GroupViewModel(
                     _lists.value = curLists
                 }
             }
-        } catch (e: SerializationException) {
+        } catch (_: SerializationException) {
             Log.e(
                 "GroupViewModel",
                 "json from ws event is not serializable to ListChangedEvent: $event"
@@ -194,9 +194,8 @@ class GroupViewModel(
                 response?.data?.let {
                     group.value = it
                     group.value.avaUrl?.let {
-                        group.value.avaUrl = group.value.avaUrl.toString()
-                            .replace("public", "http://hihit.sytes.net/storage")
-                            .toUri()  //FIXME remove this line
+                        Log.d("GroupViewModel", "avaUrl: ${group.value.avaUrl}")
+
                     }
                 }
                 Log.d("GroupViewModel", "getGroup: $response")
