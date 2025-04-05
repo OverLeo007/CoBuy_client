@@ -19,6 +19,7 @@ import ru.hihit.cobuy.api.products.UpdateProductRequest
 import ru.hihit.cobuy.api.requesters.ImageRequester
 import ru.hihit.cobuy.api.requesters.ListRequester
 import ru.hihit.cobuy.api.requesters.ProductRequester
+import ru.hihit.cobuy.api.requesters.handle
 import ru.hihit.cobuy.models.EventType
 import ru.hihit.cobuy.pusher.events.ListChangedEvent
 import ru.hihit.cobuy.pusher.events.ProductChangedEvent
@@ -134,76 +135,105 @@ class ListViewModel(
 
     fun onNameChanged(newName: String) {
         list.value.name = newName
-        ListRequester.updateList(listId,
-            UpdateListRequest(newName),
-            callback = { response ->
-                Log.d("ListViewModel", "onNameChanged: $response")
-            },
-            onError = { code, body ->
-                Log.e("ListViewModel", "onNameChanged: $code $body")
-            }
-        )
-        Log.d("ListViewModel", "onNameChanged: $newName")
+
+        viewModelScope.launch {
+            ListRequester.updateList(listId, UpdateListRequest(newName))
+                .handle(
+                    onSuccess = { response ->
+                        Log.d("ListViewModel", "onNameChanged: $response")
+                    },
+                    onServerError = { parsedError ->
+                        Log.w("ListViewModel", "onNameChanged: $parsedError")
+                    },
+                    onOtherError = {
+                        Log.w("ListViewModel", "onNameChanged: $it")
+                    }
+                )
+        }
     }
 
     fun onProductAdded(context: Context, product: ProductData) {
-        ProductRequester.createProduct(listId,
-            CreateProductRequest(
-                product.name,
-                product.description,
-                product.price,
-                product.quantity
-            ),
-            callback = { response ->
-                response?.data?.let {
-                    if (products.value.find { prod -> prod.id == it.id } != null) {
-                        return@let
+
+        viewModelScope.launch {
+            val result = ProductRequester.createProduct(
+                listId,
+                CreateProductRequest(
+                    product.name,
+                    product.description,
+                    product.price,
+                    product.quantity
+                )
+            )
+
+            result.handle(
+                onSuccess = { response ->
+                    response.data.let {
+                        if (products.value.find { prod -> prod.id == it.id } != null) {
+                            return@let
+                        }
+                        val curProducts = products.value.toMutableList()
+                        it.productImgUrl = product.productImgUrl
+                        curProducts.add(it)
+                        products.value = curProducts
+
+                        onUploadImage(context, it)
                     }
-                    val curProducts = products.value.toMutableList()
-                    it.productImgUrl = product.productImgUrl
-                    curProducts.add(it)
-                    products.value = curProducts
-
-                    onUploadImage(context, it)
+                    Log.d("ListViewModel", "onProductAdded: $response")
+                },
+                onServerError = { parsedError ->
+                    Log.w("ListViewModel", "onProductAdded: $parsedError")
+                },
+                onOtherError = {
+                    Log.w("ListViewModel", "onProductAdded: $it")
                 }
-                Log.d("ListViewModel", "onProductAdded: $response")
-            },
-            onError = { code, body ->
-                Log.e("ListViewModel", "onProductAdded: $code $body")
-            }
-        )
-//        Log.d("ListViewModel", "onProductAdded: $product")
-
+            )
+        }
     }
 
     fun onProductStatusChanged(product: ProductData) {
         products.value.find { it.id == product.id }?.let {
             it.status = product.status
         }
-        ProductRequester.updateProduct(listId, product.id,
-            UpdateProductRequest(status = product.status),
-            callback = { response ->
-                Log.d("ListViewModel", "onProductStatusChanged: $response")
-            },
-            onError = { code, body ->
-                Log.e("ListViewModel", "onProductStatusChanged: $code $body")
-            }
-        )
 
-        Log.d("ListViewModel", "onProductStatusChanged: $product")
+        viewModelScope.launch {
+            val result = ProductRequester.updateProduct(
+                listId,
+                product.id,
+                UpdateProductRequest(status = product.status)
+            )
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("ListViewModel", "onProductStatusChanged: $response")
+                },
+                onServerError = { parsedError ->
+                    Log.w("ListViewModel", "onProductStatusChanged: $parsedError")
+                },
+                onOtherError = {
+                    Log.w("ListViewModel", "onProductStatusChanged: $it")
+                }
+            )
+        }
     }
 
     fun onProductDeleted(product: ProductData) {
         products.value = products.value.filter { it.id != product.id }
-        ProductRequester.deleteProduct(listId, product.id,
-            callback = { response ->
-                Log.d("ListViewModel", "onProductDeleted: $response")
-            },
-            onError = { code, body ->
-                Log.e("ListViewModel", "onProductDeleted: $code $body")
-            }
-        )
-        Log.d("ListViewModel", "onProductDeleted: $product")
+
+        viewModelScope.launch {
+            val result = ProductRequester.deleteProduct(listId, product.id)
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("ListViewModel", "onProductDeleted: $response")
+                },
+                onServerError = { parsedError ->
+                    Log.w("ListViewModel", "onProductDeleted: $parsedError")
+                },
+                onOtherError = {
+                    Log.w("ListViewModel", "onProductDeleted: $it")
+                }
+            )
+        }
     }
 
     fun onProductEdited(product: ProductData) {
@@ -211,23 +241,34 @@ class ListViewModel(
             it.name = product.name
             it.description = product.description
         }
-        ProductRequester.updateProduct(listId, product.id,
-            UpdateProductRequest(
-                product.name,
-                product.description,
-                product.status,
-                price = product.price,
-                count = product.quantity
-            ),
-            callback = { response ->
-                Log.d("ListViewModel", "onProductEdited: $response")
+
+        viewModelScope.launch {
+            val result = ProductRequester.updateProduct(
+                listId,
+                product.id,
+                UpdateProductRequest(
+                    product.name,
+                    product.description,
+                    product.status,
+                    price = product.price,
+                    count = product.quantity
+                )
+            )
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("ListViewModel", "onProductEdited: $response")
 //                updateAll() // FIXME: Надо или нет хммм
-            },
-            onError = { code, body ->
-                Log.e("ListViewModel", "onProductEdited: $code $body")
-            }
-        )
-        Log.d("ListViewModel", "onProductEdited: $product")
+
+                },
+                onServerError = { parsedError ->
+                    Log.w("ListViewModel", "onProductEdited: $parsedError")
+                },
+                onOtherError = {
+                    Log.w("ListViewModel", "onProductEdited: $it")
+                }
+            )
+        }
     }
 
     fun onUploadImage(context: Context, product: ProductData) {
@@ -238,14 +279,20 @@ class ListViewModel(
         }
 
         image?.let {
-            ImageRequester.uploadProductImage(product.listId, product.id, it,
-                callback = { response ->
-                    Log.d("ListViewModel", "onUploadImage: $response")
-                },
-                onError = { code, body ->
-                    Log.e("ListViewModel", "onUploadImage: $code ${body?.string()}")
-                }
-            )
+            viewModelScope.launch {
+                ImageRequester.uploadProductImage(product.listId, product.id, it)
+                    .handle(
+                        onSuccess = { response ->
+                            Log.d("ListViewModel", "onUploadImage: $response")
+                        },
+                        onServerError = { parsedError ->
+                            Log.w("ListViewModel", "onUploadImage: $parsedError")
+                        },
+                        onOtherError = {
+                            Log.w("ListViewModel", "onUploadImage: $it")
+                        }
+                    )
+            }
         }
     }
 
@@ -268,38 +315,48 @@ class ListViewModel(
     }
 
     private fun getProducts() {
-        ProductRequester.getProducts(
-            listId,
-            callback = { response ->
-                response?.data?.let {
-                    products.value = it
+
+        viewModelScope.launch {
+            val result = ProductRequester.getProducts(listId)
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("ListViewModel", "getProducts: $response")
+                    products.value = response.data
+                },
+                onServerError = { parsedError ->
+                    Log.w("ListViewModel", "getProducts: $parsedError")
+                },
+                onOtherError = {
+                    Log.w("ListViewModel", "getProducts: $it")
                 }
-                Log.d("ListViewModel", "getProducts: $response")
-            },
-            onError = { code, body ->
-                Log.e("ListViewModel", "getProducts: $code $body")
-            }
-        )
+            )
+        }
     }
 
     private fun getList() {
         isListLoading.value = true
-        ListRequester.getListById(
-            listId,
-            callback = { response ->
-                response?.data?.let {
-                    list.value = it
-                }
-                Log.d("ListViewModel", "getList: $response")
-                isListLoading.value = false
-                subscribeToList()
 
-            },
-            onError = { code, body ->
-                Log.e("ListViewModel", "getList: $code $body")
-                isListLoading.value = false
-            }
-        )
+        viewModelScope.launch {
+            val result = ListRequester.getListById(listId)
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("ListViewModel", "getList: $response")
+                    list.value = response.data
+                    subscribeToList()
+                },
+                onServerError = { parsedError ->
+                    Log.w("ListViewModel", "getList: $parsedError")
+                },
+                onOtherError = {
+                    Log.w("ListViewModel", "getList: $it")
+                },
+                finally = {
+                    isListLoading.value = false
+                }
+            )
+        }
     }
 
     override fun onCleared() {

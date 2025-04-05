@@ -1,6 +1,5 @@
 package ru.hihit.cobuy.api.requesters
 
-import okhttp3.ResponseBody
 import ru.hihit.cobuy.api.Api
 import ru.hihit.cobuy.api.products.CreateProductRequest
 import ru.hihit.cobuy.api.products.CreateProductResponse
@@ -10,74 +9,53 @@ import ru.hihit.cobuy.api.products.UpdateProductRequest
 import ru.hihit.cobuy.api.requesters.RequestLauncher.launchRequest
 
 object ProductRequester {
-    fun createProduct(
+    suspend fun createProduct(
         listId: Int,
-        request: CreateProductRequest,
-        callback: (CreateProductResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+        request: CreateProductRequest
+    ): Result<CreateProductResponse> {
+        return launchRequest(
             request = { Api.products.createProduct(listId, request) },
-            callback = callback,
-            errorMessage = "Create Product Error",
-            onError = onError
+            errorMessage = "Create Product Error"
         )
     }
 
-    fun getProducts(
-        listId: Int,
-        callback: (GetProductsResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+    suspend fun getProducts(
+        listId: Int
+    ): Result<GetProductsResponse> {
+        return launchRequest(
             request = { Api.products.getProducts(listId) },
-            callback = callback,
-            errorMessage = "Get Products Error",
-            onError = onError
+            errorMessage = "Get Products Error"
         )
     }
 
-    fun getProductById(
+    suspend fun getProductById(
         listId: Int,
-        id: Int,
-        callback: (GetUpdateProductResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+        id: Int
+    ): Result<GetUpdateProductResponse> {
+        return launchRequest(
             request = { Api.products.getProductById(listId, id) },
-            callback = callback,
-            errorMessage = "Get Product By Id Error",
-            onError = onError
+            errorMessage = "Get Product By Id Error"
         )
     }
 
-    fun updateProduct(
+    suspend fun updateProduct(
         listId: Int,
         id: Int,
-        request: UpdateProductRequest,
-        callback: (GetUpdateProductResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-
-    ) {
-        launchRequest(
+        request: UpdateProductRequest
+    ): Result<GetUpdateProductResponse> {
+        return launchRequest(
             request = { Api.products.updateProduct(listId, id, request) },
-            callback = callback,
-            errorMessage = "Update Product Error",
-            onError = onError
+            errorMessage = "Update Product Error"
         )
     }
 
-    fun deleteProduct(
+    suspend fun deleteProduct(
         listId: Int,
-        id: Int,
-        callback: (Boolean) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+        id: Int
+    ): Result<Unit> {
+        return launchRequest(
             request = { Api.products.deleteProduct(listId, id) },
-            callback = { response -> callback(response != null) },
-            errorMessage = "Delete Product Error",
-            onError = onError
+            errorMessage = "Delete Product Error"
         )
     }
 }

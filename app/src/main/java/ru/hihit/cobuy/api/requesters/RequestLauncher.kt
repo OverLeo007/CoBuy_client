@@ -1,31 +1,73 @@
 package ru.hihit.cobuy.api.requesters
 
-import android.util.Log
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import okhttp3.ResponseBody
+import android.content.Context
+import android.widget.Toast
 import retrofit2.Response
+import ru.hihit.cobuy.App
+import ru.hihit.cobuy.api.errors.HttpException
+import ru.hihit.cobuy.api.errors.NetworkException
+import ru.hihit.cobuy.utils.parseJson
+import java.io.IOException
 
 internal object RequestLauncher {
-    fun <T> launchRequest(
+    suspend inline fun <reified T> launchRequest(
         request: suspend () -> Response<T>,
-        callback: (T?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit,
-        errorMessage: String
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
+        errorMessage: String = "Ошибка запроса"
+    ): Result<T> {
+        return try {
             val response = request()
-            withContext(Dispatchers.Main) {
-                if (response.isSuccessful) {
-                    callback(response.body())
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    Result.success(body)
+                } else if (T::class == Unit::class) {
+                    // Если тип T это Unit, то возвращаем успех без данных
+                    Result.success(Unit as T)
                 } else {
-                    val body: ResponseBody? = response.errorBody()
-                    Log.e("Requester", "$errorMessage ${response.code()}: ${body?.string()}")
-                    onError(response.code(), body)
+                    // Для других типов - ошибка
+                    Result.failure(Exception("$errorMessage - Пустой ответ от сервера"))
                 }
+            } else {
+                val errorText = response.errorBody()?.string()
+                Result.failure(HttpException(response.code(), errorText))
             }
+        } catch (e: IOException) {
+            Result.failure(NetworkException("$errorMessage - Ошибка сети: ${e.localizedMessage}", e))
+        } catch (e: Exception) {
+            Result.failure(Exception("$errorMessage - Ошибка: ${e.localizedMessage}", e))
         }
     }
 }
+
+fun <T> Result<T>.handle(
+    context: Context = App.getContext(),
+    onSuccess: (T) -> Unit,
+    onServerError: (Map<String, Any>?) -> Unit,
+    onOtherError: (String) -> Unit = {},
+    finally: () -> Unit = {}
+) {
+    this.onSuccess(onSuccess)
+        .onFailure { error ->
+            when (error) {
+                is HttpException -> {
+                    val parsed = error.body?.let { parseJson(it) }
+                    if (parsed?.isEmpty() == true) {
+                        Toast.makeText(context, error.localizedMessage ?: "Unknown error", Toast.LENGTH_LONG).show()
+                        onOtherError(error.localizedMessage ?: "Unknown error")
+                    } else {
+                        onServerError(parsed)
+                    }
+                }
+                is NetworkException -> {
+                    Toast.makeText(context, error.localizedMessage ?: "Network error", Toast.LENGTH_LONG).show()
+                    onOtherError(error.localizedMessage ?: "Network error")
+                }
+                else -> {
+                    Toast.makeText(context, error.localizedMessage ?: "Unknown error", Toast.LENGTH_LONG).show()
+                    onOtherError(error.localizedMessage ?: "Unknown error")
+                }
+            }
+        }
+    finally()
+}
+

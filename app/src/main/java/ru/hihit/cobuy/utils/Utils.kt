@@ -6,15 +6,8 @@ import android.graphics.ImageDecoder
 import android.net.Uri
 import android.util.Log
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import com.google.gson.reflect.TypeToken
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializer
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -26,7 +19,12 @@ import java.lang.reflect.Type
 fun parseJson(json: String): Map<String, Any> {
     val gson = Gson()
     val type: Type = object : TypeToken<Map<String, Any>>() {}.type
-    return gson.fromJson(json, type)
+    try {
+        return gson.fromJson(json, type)
+    } catch (e: JsonSyntaxException) {
+        Log.e("Utils", "Failed to parse JSON: $json", e)
+        return emptyMap()
+    }
 }
 
 fun isJwt(token: String): Boolean {

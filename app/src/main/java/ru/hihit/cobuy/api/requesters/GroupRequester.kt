@@ -1,6 +1,5 @@
 package ru.hihit.cobuy.api.requesters
 
-import okhttp3.ResponseBody
 import ru.hihit.cobuy.api.Api
 import ru.hihit.cobuy.api.groups.CreateGroupResponse
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
@@ -10,87 +9,60 @@ import ru.hihit.cobuy.api.groups.KickUserRequest
 import ru.hihit.cobuy.api.requesters.RequestLauncher.launchRequest
 
 object GroupRequester {
-    fun createGroup(
-        request: CreateUpdateGroupRequest,
-        callback: (CreateGroupResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+
+    suspend fun createGroup(
+        request: CreateUpdateGroupRequest
+    ): Result<CreateGroupResponse> {
+        return launchRequest(
             request = { Api.groups.createGroup(request) },
-            callback = callback,
-            errorMessage = "Create Group Error",
-            onError = onError
+            errorMessage = "Create Group Error"
         )
     }
 
-    fun getGroups(callback: (GetGroupsResponse?) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
-        launchRequest(
+    suspend fun getGroups(): Result<GetGroupsResponse> {
+        return launchRequest(
             request = { Api.groups.getGroups() },
-            callback = callback,
-            errorMessage = "Get Groups Error",
-            onError = onError
+            errorMessage = "Get Groups Error"
         )
     }
 
-    fun getGroupById(
-        id: Int,
-        callback: (GetUpdateGroupResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+    suspend fun getGroupById(id: Int): Result<GetUpdateGroupResponse> {
+        return launchRequest(
             request = { Api.groups.getGroupById(id) },
-            callback = callback,
-            errorMessage = "Get Group By Id Error",
-            onError = onError
+            errorMessage = "Get Group By Id Error"
         )
     }
 
-    fun updateGroup(
+    suspend fun updateGroup(
         id: Int,
-        request: CreateUpdateGroupRequest,
-        callback: (GetUpdateGroupResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+        request: CreateUpdateGroupRequest
+    ): Result<GetUpdateGroupResponse> {
+        return launchRequest(
             request = { Api.groups.updateGroup(id, request) },
-            callback = callback,
-            errorMessage = "Update Group Error",
-            onError = onError
+            errorMessage = "Update Group Error"
         )
     }
 
-    fun deleteGroup(id: Int, callback: (Boolean) -> Unit, onError: (Int, ResponseBody?) -> Unit) {
-        launchRequest(
+    suspend fun deleteGroup(id: Int): Result<Unit> {
+        return launchRequest(
             request = { Api.groups.deleteGroup(id) },
-            callback = { response -> callback(response != null) },
-            errorMessage = "Delete Group Error",
-            onError = onError
+            errorMessage = "Delete Group Error"
         )
     }
 
-    fun leaveGroup(
-        groupId: Int,
-        callback: (Boolean) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
-            request = { Api.groups.leaveGroup(groupId) },
-            callback = { response -> callback(response != null) },
-            errorMessage = "Leave Group Error",
-            onError = onError
+    suspend fun leaveGroup(id: Int): Result<Unit> {
+        return launchRequest(
+            request = { Api.groups.leaveGroup(id) },
+            errorMessage = "Leave Group Error"
         )
     }
 
-    fun kickFromGroup(
-        request: KickUserRequest,
-        callback: (Boolean) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+    suspend fun kickFromGroup(
+        request: KickUserRequest
+    ): Result<Unit> {
+        return launchRequest(
             request = { Api.groups.kickUser(request) },
-            callback = { response -> callback(response != null) },
-            errorMessage = "Kick User Error",
-            onError = onError
+            errorMessage = "Kick User Error"
         )
     }
 }

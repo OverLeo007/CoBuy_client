@@ -34,6 +34,7 @@ import ru.hihit.cobuy.api.requesters.GroupRequester
 import ru.hihit.cobuy.api.requesters.ImageRequester
 import ru.hihit.cobuy.api.requesters.ListRequester
 import ru.hihit.cobuy.api.requesters.MiscRequester
+import ru.hihit.cobuy.api.requesters.handle
 import ru.hihit.cobuy.models.EventType
 import ru.hihit.cobuy.pusher.events.GroupChangedEvent
 import ru.hihit.cobuy.pusher.events.ListChangedEvent
@@ -75,7 +76,7 @@ class GroupViewModel(
         showArchived
     ) { items, showCompleted, showArchived ->
         items.filter { item ->
-             item.hidden == showArchived
+            item.hidden == showArchived
         }.filter { item ->
             if (showCompleted) {
                 true
@@ -84,7 +85,6 @@ class GroupViewModel(
             }
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
 
 
     init {
@@ -188,56 +188,67 @@ class GroupViewModel(
 
     private fun getGroup() {
         isGroupLoading.value = true
-        GroupRequester.getGroupById(
-            groupId,
-            callback = { response ->
-                response?.data?.let {
-                    group.value = it
-                    group.value.avaUrl?.let {
-                        Log.d("GroupViewModel", "avaUrl: ${group.value.avaUrl}")
 
-                    }
+        viewModelScope.launch {
+            GroupRequester.getGroupById(groupId).handle(
+                onSuccess = { response ->
+                    group.value = response.data
+                    Log.d("GroupViewModel", "getGroup: $response")
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupViewModel", "getGroup: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                },
+                onOtherError = {
+                    Log.w("GroupViewModel", "getGroup: $it")
+                },
+                finally = {
+                    isGroupLoading.value = false
                 }
-                Log.d("GroupViewModel", "getGroup: $response")
-                isGroupLoading.value = false
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "getGroup: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-                isGroupLoading.value = false
-            }
-        )
+            )
+        }
     }
 
     private fun getGroupImage() {
-        ImageRequester.getGroupImage(groupId,
-            callback = { response ->
-                response?.data?.let {
-                    group.value.avaUrl = it.avaUrl
+
+        viewModelScope.launch {
+            ImageRequester.getGroupImage(groupId).handle(
+                onSuccess = { response ->
+                    group.value.avaUrl = response.data.avaUrl
+                    Log.d("GroupViewModel", "getGroupImage: $response")
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupViewModel", "getGroupImage: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                },
+                onOtherError = {
+                    Log.w("GroupViewModel", "getGroupImage: $it")
                 }
-                Log.d("GroupViewModel", "getGroupImage: $response")
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "getGroupImage: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-            }
-        )
+            )
+        }
     }
 
     private fun getLists() {
-        ListRequester.getLists(
-            groupId,
-            callback = { response ->
-                response?.data?.let {
-                    _lists.value = it
+
+        viewModelScope.launch {
+            ListRequester.getLists(groupId).handle(
+                onSuccess = { response ->
+                    _lists.value = response.data
+                    Log.d("GroupViewModel", "getLists: $response")
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupViewModel", "getLists: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                },
+                onOtherError = {
+                    Log.w("GroupViewModel", "getLists: $it")
                 }
-                Log.d("GroupViewModel", "getLists: $response")
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "getLists: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-            }
-        )
+            )
+        }
+
     }
 
     fun onRefresh() {
@@ -258,107 +269,151 @@ class GroupViewModel(
 
     fun onImageSelected(context: Context, imageUri: Uri) {
         val picData = context.getMultipartImageFromUri(imageUri)
-        picData?.let {
-            ImageRequester.uploadGroupImage(
-                groupId,
-                picData,
-                callback = {
-                    Log.d("GroupViewModel", "onImageSelected: $it")
-                    getGroupImage()
-                },
-                onError = { code, body ->
-                    Log.e("GroupViewModel", "onImageSelected: $code $body")
-                    Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-                }
-            )
-        }
         Log.d("GroupViewModel", "onImageSelected: $picData")
+        viewModelScope.launch {
+            picData?.let {
+                ImageRequester.uploadGroupImage(groupId, picData).handle(
+                    onSuccess = {
+                        Log.d("GroupViewModel", "onImageUploaded: $it")
+                        getGroupImage()
+                    },
+                    onServerError = { parsedError ->
+                        Log.w("GroupViewModel", "onImageUploaded: $parsedError")
+                        Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                            .show()
+                    },
+                    onOtherError = {
+                        Log.w("GroupViewModel", "onImageUploaded: $it")
+                    }
+                )
+            }
+        }
     }
 
     fun onKickUser(user: UserData) {
-        GroupRequester.kickFromGroup(
-            KickUserRequest(groupId, user.id),
-            callback = {
-                Log.d("GroupViewModel", "onKickUser: $it")
-                val curUsers = group.value.members.toMutableList()
-                curUsers.removeIf { u -> u.id == user.id }
-                group.value.members = curUsers
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "onKickUser: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-            }
-        )
+
+        viewModelScope.launch {
+            GroupRequester.kickFromGroup(
+                KickUserRequest(groupId, user.id)
+            ).handle(
+                onSuccess = {
+                    Log.d("GroupViewModel", "onKickUser: $it")
+                    val curUsers = group.value.members.toMutableList()
+                    curUsers.removeIf { u -> u.id == user.id }
+                    group.value.members = curUsers
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupViewModel", "onKickUser: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                },
+                onOtherError = {
+                    Log.w("GroupViewModel", "onKickUser: $it")
+                }
+            )
+        }
     }
 
     fun onNameChanged(name: String) {
         group.value.name = name
-        GroupRequester.updateGroup(
-            groupId,
-            CreateUpdateGroupRequest(group.value.name),
-            callback = {
-                Log.d("GroupViewModel", "onNameChanged: $it")
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "onNameChanged: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-            }
-        )
+
+        viewModelScope.launch {
+            val result = GroupRequester.updateGroup(
+                groupId,
+                CreateUpdateGroupRequest(name)
+            )
+
+            result.handle(
+                onSuccess = {
+                    Log.d("GroupViewModel", "onNameChanged: $it")
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupViewModel", "onNameChanged: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                },
+                onOtherError = {
+                    Log.w("GroupViewModel", "onNameChanged: $it")
+                }
+            )
+        }
     }
 
     fun onAddList(listName: String) {
-        ListRequester.createList(
-            CreateListRequest(listName, groupId),
-            callback = {
-                Log.d("GroupViewModel", "onAddList: $it")
-                it?.let {
+
+        viewModelScope.launch {
+            ListRequester.createList(
+                CreateListRequest(listName, groupId)
+            ).handle(
+                onSuccess = { response ->
+                    Log.d("GroupViewModel", "onAddList: $response")
                     val curLists = _lists.value.toMutableList()
-                    if (curLists.find { list -> list.id == it.data.id } == null) {
-                        curLists.add(it.data)
+                    if (curLists.find { list -> list.id == response.data.id } == null) {
+                        curLists.add(response.data)
                     }
                     _lists.value = curLists
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupViewModel", "onAddList: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                },
+                onOtherError = {
+                    Log.w("GroupViewModel", "onAddList: $it")
                 }
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "onAddList: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-            }
-        )
+            )
+        }
     }
 
     fun getInviteLink() {
         isInviteLinkLoading.value = true
         viewModelScope.launch {
-            MiscRequester.getInviteToken(
-                groupId,
-                callback = { response ->
-                    group.value.inviteLink = response?.token
+
+            val result = MiscRequester.getInviteToken(groupId)
+
+            result.handle(
+                onSuccess = { response ->
+                    group.value.inviteLink = response.token
                     isInviteLinkLoading.value = false
                     Log.d("GroupViewModel", "getInviteLink: $response")
                 },
-                onError = { code, body ->
+                onServerError = { parsedError ->
                     isInviteLinkLoading.value = false
-                    Log.e("GroupViewModel", "getInviteLink: $code $body")
-                    Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
+                    Log.w("GroupViewModel", "getInviteLink: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                },
+                onOtherError = {
+                    Log.w("GroupViewModel", "getInviteLink: $it")
+                },
+                finally = {
+                    isInviteLinkLoading.value = false
                 }
             )
         }
     }
 
     fun onDeleteList(toDelListId: Int) {
-        ListRequester.deleteList(
-            toDelListId,
-            callback = {
-                Log.d("GroupViewModel", "onDeleteList: $it")
-                val curLists = _lists.value.toMutableList()
-                curLists.removeIf { list -> list.id == toDelListId }
-                _lists.value = curLists
-            },
-            onError = { code, body ->
-                Log.e("GroupViewModel", "onDeleteList: $code $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-            }
-        )
+
+        viewModelScope.launch {
+            ListRequester.deleteList(toDelListId)
+                .handle(
+                    onSuccess = {
+                        Log.d("GroupViewModel", "onDeleteList: $it")
+                        val curLists = _lists.value.toMutableList()
+                        curLists.removeIf { list -> list.id == toDelListId }
+                        _lists.value = curLists
+                    },
+                    onServerError = { parsedError ->
+                        Log.w("GroupViewModel", "onDeleteList: $parsedError")
+                        Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                            .show()
+                    },
+                    onOtherError = {
+                        Log.w("GroupViewModel", "onDeleteList: $it")
+                    }
+                )
+        }
     }
 
     fun shareQr(qrBitmap: ImageBitmap, context: Context) {
@@ -389,25 +444,34 @@ class GroupViewModel(
     }
 
     private fun updateListArchiveState(list: ListData?) {
-        val logMsg = if (list?.hidden == true) {
-            "archived"
-        } else {
-            "unarchived"
-        }
         list?.let { list ->
-            ListRequester.updateList(
-                list.id,
-                UpdateListRequest(
-                    list.name,
-                    list.hidden
-                ),
-                callback = {
-                    Log.d("GroupViewModel", "$logMsg list: $it")
-                },
-                onError = { code, body ->
-                    Log.e("GroupViewModel", "onUpdateListArchiveState: $code ${body?.charStream()}")
-                }
-            )
+            val logMsg = if (list.hidden == true) {
+                "archived"
+            } else {
+                "unarchived"
+            }
+
+            viewModelScope.launch {
+                ListRequester.updateList(
+                    list.id,
+                    UpdateListRequest(
+                        list.name,
+                        list.hidden
+                    )
+                ).handle(
+                    onSuccess = {
+                        Log.d("GroupViewModel", "$logMsg list: $it")
+                    },
+                    onServerError = { parsedError ->
+                        Log.w("GroupViewModel", "onUpdateListArchiveState: $parsedError")
+                        Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT)
+                            .show()
+                    },
+                    onOtherError = {
+                        Log.w("GroupViewModel", "onUpdateListArchiveState: $it")
+                    }
+                )
+            }
         }
     }
 

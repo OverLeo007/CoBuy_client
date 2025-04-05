@@ -7,29 +7,21 @@ import ru.hihit.cobuy.api.misc.InviteTokenResponse
 import ru.hihit.cobuy.api.requesters.RequestLauncher.launchRequest
 
 object MiscRequester {
-    fun getInviteToken(
-        groupId: Int,
-        callback: (InviteTokenResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+    suspend fun getInviteToken(
+        groupId: Int
+    ): Result<InviteTokenResponse> {
+        return launchRequest(
             request = { Api.misc.getInviteToken(groupId) },
-            callback = callback,
             errorMessage = "Get Invite Token Error",
-            onError = onError
         )
     }
 
-    fun acceptInvitation(
+    suspend fun acceptInvitation(
         token: String,
-        callback: (InvitationStatusResponse?) -> Unit,
-        onError: (Int, ResponseBody?) -> Unit
-    ) {
-        launchRequest(
+    ): Result<InvitationStatusResponse> {
+        return launchRequest(
             request = { Api.misc.acceptInvitation(token) },
-            callback = callback,
             errorMessage = "Accept Invitation Error",
-            onError = onError
         )
     }
 }

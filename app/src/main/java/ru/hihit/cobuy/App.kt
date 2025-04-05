@@ -8,7 +8,9 @@ import kotlinx.serialization.json.Json
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Response
+import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import ru.hihit.cobuy.pusher.PusherService
 
@@ -33,6 +35,7 @@ class App : Application() {
         val authInterceptor = AuthInterceptor(this)
         okHttpClient = OkHttpClient.Builder()
             .addInterceptor(authInterceptor)
+
             .build()
 
         retrofit = Retrofit.Builder()
@@ -50,14 +53,17 @@ class App : Application() {
     companion object {
         private lateinit var instance: App
 
+        @Synchronized
         fun getRetrofit(): Retrofit {
             return instance.retrofit
         }
 
+        @Synchronized
         fun getContext(): Context {
             return instance
         }
 
+        @Synchronized
         fun getPusherService(): PusherService {
             instance.pusherService.isPusherConnected()
             return instance.pusherService
@@ -83,3 +89,4 @@ class AuthInterceptor(context: Context) : Interceptor {
         return token
     }
 }
+

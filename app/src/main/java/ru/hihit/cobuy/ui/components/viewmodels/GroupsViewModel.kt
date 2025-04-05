@@ -7,14 +7,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.groups.CreateUpdateGroupRequest
 import ru.hihit.cobuy.api.models.GroupData
 import ru.hihit.cobuy.api.requesters.GroupRequester
 import ru.hihit.cobuy.api.requesters.MiscRequester
+import ru.hihit.cobuy.api.requesters.handle
 import ru.hihit.cobuy.models.Group
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.utils.isJwt
@@ -67,18 +70,28 @@ class GroupsViewModel : ViewModel() {
 
     fun addGroup(group: Group) {
         isAddingGroup.value = true
-        val request = CreateUpdateGroupRequest(name = group.name)
-        GroupRequester.createGroup(
-            request = request,
-            callback = { response ->
-                Log.d("GroupsViewModel", "addGroup: $response")
-                response?.data?.let { onGroupAdded(it) }
-                openAddModal.value = false
-            },
-            onError = { code, body ->
-                Log.d("GroupsViewModel", "Error: $code body: $body")
-            }
-        )
+
+        viewModelScope.launch {
+            val result = GroupRequester.createGroup(CreateUpdateGroupRequest(group.name))
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("GroupsViewModel", "addGroup: $response")
+                    onGroupAdded(response.data)
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupsViewModel", "addGroup: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT).show()
+                },
+                onOtherError = {
+                    Log.w("GroupsViewModel", "addGroup: $it")
+                },
+                finally = {
+                    openAddModal.value = false
+                    isAddingGroup.value = false
+                }
+            )
+        }
     }
 
     private fun onGroupAdded(group: GroupData) {
@@ -89,16 +102,23 @@ class GroupsViewModel : ViewModel() {
 
     fun deleteGroup(group: GroupData) {
         groups.value = groups.value.filter { it.id != group.id }
-        GroupRequester.deleteGroup(
-            id = group.id,
-            callback = { response ->
-                Log.d("GroupsViewModel", "deleteGroup: $response")
-            },
-            onError = { code, body ->
-                Log.e("GroupsViewModel", "deleteGroup: $code $body")
-            }
-        )
-        Log.d("GroupsViewModel", "deleteGroup: $group")
+
+        viewModelScope.launch {
+            val result = GroupRequester.deleteGroup(group.id)
+
+            result.handle(
+                onSuccess = {
+                    Log.d("GroupsViewModel", "deleteGroup: $it")
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupsViewModel", "deleteGroup: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT).show()
+                },
+                onOtherError = {
+                    Log.w("GroupsViewModel", "deleteGroup: $it")
+                }
+            )
+        }
     }
 
     fun joinGroup(token: String, navHostController: NavHostController) {
@@ -106,65 +126,82 @@ class GroupsViewModel : ViewModel() {
             scanError = App.getContext().getString(R.string.invalid_token)
             return
         }
-        MiscRequester.acceptInvitation(
-            token = token,
-            callback = { response ->
-                Log.d("GroupsViewModel", "joinGroup: $response")
-                updateGroups()
-                navHostController.navigate(Route.Groups)
-            },
-            onError = { code, body ->
-                Log.d("GroupsViewModel", "Error: $code body: $body")
-                body?.let {
-                    parseJson(it.string())
-                }?.let {
-                    Log.d("GroupsViewModel", "Error: $code body: $it")
-                    if (it.containsKey("error")) {
+
+        viewModelScope.launch {
+            val result = MiscRequester.acceptInvitation(token)
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("GroupsViewModel", "joinGroup: $response")
+                    updateGroups()
+                    navHostController.navigate(Route.Groups)
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupsViewModel", "joinGroup: $parsedError")
+                    parsedError?.containsKey("error")?.let {
                         Log.d("GroupsViewModel", "Body is contain error")
-                        val error = it["error"] as String
+                        val error = parsedError["error"] as String
                         scanError = error
                     }
-                    if (it.containsKey("message")) {
+                    parsedError?.containsKey("message")?.let {
                         Log.d("GroupsViewModel", "Body is contain message")
-                        val error = it["message"] as String
+                        val error = parsedError["message"] as String
                         scanError = error
                     }
+                },
+                onOtherError = {
+                    Log.w("GroupsViewModel", "joinGroup: $it")
                 }
-            }
-        )
+            )
+        }
     }
 
     private fun getAndProcessGroups(
         onGroupsGet: (List<GroupData>) -> Unit
     ) {
         isLoading.value = true
-        GroupRequester.getGroups(
-            callback = { response ->
-                response?.data?.let { newGroups ->
-                    groups.value = newGroups
-                    onGroupsGet(newGroups)
+
+        viewModelScope.launch {
+            val result = GroupRequester.getGroups()
+
+            result.handle(
+                onSuccess = { response ->
+                    Log.d("GroupsViewModel", "getAndProcessGroups: $response")
+                    groups.value = response.data
+                    onGroupsGet(response.data)
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupsViewModel", "getAndProcessGroups: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT).show()
+                },
+                onOtherError = {
+                    Log.w("GroupsViewModel", "getAndProcessGroups: $it")
+                },
+                finally = {
+                    isLoading.value = false
                 }
-                isLoading.value = false
-            },
-            onError = { code, body ->
-                Log.d("GroupsViewModel", "Error: $code body: $body")
-                Toast.makeText(App.getContext(), "Error: $code", Toast.LENGTH_SHORT).show()
-                isLoading.value = false
-            }
-        )
+            )
+        }
     }
 
     fun leaveGroup(group: GroupData) {
         groups.value = groups.value.filter { it.id != group.id }
-        GroupRequester.leaveGroup(
-            groupId = group.id,
-            callback = { response ->
-                Log.d("GroupsViewModel", "leaveGroup: $response")
-            },
-            onError = { code, body ->
-                Log.e("GroupsViewModel", "leaveGroup: $code $body")
-            }
-        )
-        Log.d("GroupsViewModel", "leaveGroup: $group")
+
+        viewModelScope.launch {
+            val result = GroupRequester.leaveGroup(group.id)
+
+            result.handle(
+                onSuccess = {
+                    Log.d("GroupsViewModel", "leaveGroup: $it")
+                },
+                onServerError = { parsedError ->
+                    Log.w("GroupsViewModel", "leaveGroup: $parsedError")
+                    Toast.makeText(App.getContext(), parsedError.toString(), Toast.LENGTH_SHORT).show()
+                },
+                onOtherError = {
+                    Log.w("GroupsViewModel", "leaveGroup: $it")
+                }
+            )
+        }
     }
 }

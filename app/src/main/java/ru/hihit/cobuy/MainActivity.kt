@@ -15,10 +15,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import kotlinx.coroutines.launch
 import me.zhanghai.compose.preference.ProvidePreferenceLocals
 import me.zhanghai.compose.preference.defaultPreferenceFlow
 import ru.hihit.cobuy.api.requesters.AuthRequester
+import ru.hihit.cobuy.api.requesters.handle
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.screens.MainScreen
 import ru.hihit.cobuy.ui.theme.CoBuyTheme
@@ -29,71 +32,68 @@ import ru.hihit.cobuy.utils.removeFromPreferences
 @ExperimentalPermissionsApi
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-//        setContent {
-//            CoBuyTheme {
-//                WhileAuthScreen()
-//            }
-//        }
+        super.onCreate(savedInstanceState)
         setContentImpl {
             WhileAuthScreen()
         }
-        super.onCreate(savedInstanceState)
+
         val context = App.getContext()
         var startDestination: String = Route.Authorization
         var navigateTo: String = Route.Groups
+
         logSharedPreferences(context)
-        if (context.getFromPreferences("auth_token", "") == "") {
+
+        // Проверка наличия токена
+        if (context.getFromPreferences("auth_token", "").isEmpty()) {
             setContentImpl {
                 MainScreen(startDestination)
             }
         } else {
+            lifecycleScope.launch {
+                // Вызываем проверку логина
+                val result = AuthRequester.checkLogin()
 
-            AuthRequester.checkLogin(
-                callback = { response ->
-                    response?.let {
-                        (context.getUserDataFromPreferences() == response.userData).let {
-                            val lastRoute = context.getFromPreferences("last_route", Route.Groups)
-                            navigateTo =
-                                if (lastRoute.contains(Regex("\\{.*?\\}")) || lastRoute.contains(
-                                        Route.Dummy
-                                    )
-                                ) {
+                result.handle(
+                    onSuccess = { response ->
+                        response.let {
+                            if (context.getUserDataFromPreferences() == it.userData) {
+                                val lastRoute = context.getFromPreferences("last_route", Route.Groups)
+                                navigateTo = if (lastRoute.contains(Regex("\\{.*?\\}")) || lastRoute.contains(Route.Dummy)) {
                                     context.removeFromPreferences("last_route")
                                     Route.Groups
                                 } else lastRoute
-                            Log.d("MainActivity", "start_from: $navigateTo")
-                            startDestination = Route.Groups
+                                Log.d("MainActivity", "start_from: $navigateTo")
+                                startDestination = Route.Groups
+                            }
                         }
-                    } ?: run {
-                        Toast.makeText(
-                            context,
-                            "Ошибка авторизации, возможно проблема с сервером",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        // Отображаем экран после авторизации
+                        setContentImpl {
+                            MainScreen(startDestination, navigateTo)
+                        }
+                    },
+                    onServerError = { parsedError ->
+                        // Обработка ошибок сервера
+                        Toast.makeText(context, "Ошибка с сервером", Toast.LENGTH_SHORT).show()
                         startDestination = Route.Authorization
+                        setContentImpl {
+                            MainScreen(startDestination)
+                        }
+                    },
+                    onOtherError = { errorMsg ->
+                        // Ошибка сети или неизвестная ошибка
+                        Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
+                        startDestination = Route.Authorization
+                        setContentImpl {
+                            MainScreen(startDestination)
+                        }
+                    },
+                    finally = {
+                        // Финальная обработка (если нужно)
                     }
-                    setContentImpl {
-                        MainScreen(startDestination, navigateTo)
-                    }
-                },
-                onError = { _, _ ->
-                    startDestination = Route.Authorization
-                    setContentImpl {
-                        MainScreen(startDestination)
-                    }
-//                    setContent {
-//                        CoBuyTheme {
-//                            ProvidePreferenceLocals {
-//                                MainScreen(startDestination)
-//                            }
-//                        }
-//                    }
-                }
-            )
+                )
+            }
         }
     }
-
-
 }
 
 

@@ -45,6 +45,7 @@ fun AuthScreen(
     vm: AuthViewModel
 ) {
     val context = LocalContext.current
+    // TODO: Убрать данные
     var email by remember { mutableStateOf("qwe@qwe.qwe") }
     var password by remember { mutableStateOf("qweqweqwe") }
     var passwordVisible by remember { mutableStateOf(false) }
