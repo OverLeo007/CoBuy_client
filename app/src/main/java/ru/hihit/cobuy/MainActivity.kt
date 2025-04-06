@@ -49,12 +49,13 @@ class MainActivity : ComponentActivity() {
                 MainScreen(startDestination)
             }
         } else {
+            Log.d("MainActivity", "checkLogin")
             lifecycleScope.launch {
                 // Вызываем проверку логина
                 val result = AuthRequester.checkLogin()
-
                 result.handle(
                     onSuccess = { response ->
+                        Log.d("MainActivity", "checkLogin: $response")
                         response.let {
                             if (context.getUserDataFromPreferences() == it.userData) {
                                 val lastRoute = context.getFromPreferences("last_route", Route.Groups)
@@ -72,6 +73,7 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     onServerError = { parsedError ->
+                        Log.d("MainActivity", "checkLogin: $parsedError")
                         // Обработка ошибок сервера
                         Toast.makeText(context, "Ошибка с сервером", Toast.LENGTH_SHORT).show()
                         startDestination = Route.Authorization
@@ -80,6 +82,7 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     onOtherError = { errorMsg ->
+                        Log.d("MainActivity", "checkLogin: $errorMsg")
                         // Ошибка сети или неизвестная ошибка
                         Toast.makeText(context, errorMsg, Toast.LENGTH_SHORT).show()
                         startDestination = Route.Authorization
@@ -130,9 +133,9 @@ fun WhileAuthScreen() {
 
 fun logSharedPreferences(context: Context) {
     val sharedPreferences = context.getSharedPreferences("CoBuyApp", Context.MODE_PRIVATE)
-    Log.d("SharedPreferences", "All entries:")
+    Log.d("MainActivity", "SharedPreferencesAll entries:")
     val allEntries = sharedPreferences.all
     for ((key, value) in allEntries) {
-        Log.d("SharedPreferences", "$key: $value")
+        Log.d("MainActivity", "$key: $value")
     }
 }

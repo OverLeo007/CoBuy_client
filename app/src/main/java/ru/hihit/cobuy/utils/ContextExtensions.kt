@@ -59,7 +59,7 @@ fun Context.getUserDataFromPreferences(): UserData {
     val id = getFromPreferences("user_id", 0)
     val email = getFromPreferences("user_email", "")
     val name = getFromPreferences("user_name", "")
-    return UserData(id, email, name)
+    return UserData(id, name, email)
 }
 
 
