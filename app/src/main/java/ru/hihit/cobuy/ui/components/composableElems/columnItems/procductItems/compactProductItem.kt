@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.models.ProductData
+import ru.hihit.cobuy.currency.CurrencyViewModel
 import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.ProductModal
 import ru.hihit.cobuy.ui.theme.getColorByHash
@@ -57,8 +57,7 @@ import ru.hihit.cobuy.utils.getFromPreferences
 
 @OptIn(
     ExperimentalFoundationApi::class,
-    ExperimentalComposeUiApi::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalComposeUiApi::class
 )
 @Composable
 fun CompactProductItem(
@@ -68,12 +67,13 @@ fun CompactProductItem(
     onEdited: (ProductData) -> Unit = {},
     @SuppressLint("ModifierParameter") placementModifier: Modifier,
     isDeleted: MutableState<Boolean>,
-    dismissState: SwipeToDismissBoxState
+    dismissState: SwipeToDismissBoxState,
+    currencyVm: CurrencyViewModel
 ) {
     var isBought by remember { mutableStateOf(product.status == ProductStatus.BOUGHT) }
     var isPlanned by remember { mutableStateOf(product.status == ProductStatus.PLANNED) }
 
-    var context = LocalContext.current
+    val context = LocalContext.current
 
     fun updateStatus(newStatus: ProductStatus) {
         product.status = newStatus
@@ -98,7 +98,8 @@ fun CompactProductItem(
                     openModal.value = false
                 },
                 onImageSelected = onImageSelected,
-                onDismiss = { openModal.value = false }
+                onDismiss = { openModal.value = false },
+                currencyVm = currencyVm
             )
     }
 
@@ -151,7 +152,10 @@ fun CompactProductItem(
                         ) {
                             Column(
                                 modifier = Modifier
-                                    .weight(1f, fill = false)  // Занимает доступное место, но не вытесняет кнопку
+                                    .weight(
+                                        1f,
+                                        fill = false
+                                    )  // Занимает доступное место, но не вытесняет кнопку
                                     .padding(end = 8.dp),  // Отступ от кнопки
                             ) {
                                 Text(
@@ -170,13 +174,18 @@ fun CompactProductItem(
                             }
                             IconButton(
                                 onClick = {
-                                    val newStatus = if (isBought) ProductStatus.NONE else ProductStatus.BOUGHT
+                                    val newStatus =
+                                        if (isBought) ProductStatus.NONE else ProductStatus.BOUGHT
                                     updateStatus(newStatus)
                                 },
-                                enabled = product.buyer == null || context.getFromPreferences("user_id", -1) == product.buyer.id,
+                                enabled = product.buyer == null || context.getFromPreferences(
+                                    "user_id",
+                                    -1
+                                ) == product.buyer.id,
                                 modifier = Modifier.size(48.dp)
                             ) {
-                                Crossfade(targetState = isBought || isPlanned,
+                                Crossfade(
+                                    targetState = isBought || isPlanned,
                                     label = "Buy button anim"
                                 ) { targetState ->
                                     Icon(
@@ -201,7 +210,6 @@ fun CompactProductItem(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DismissCompactProductItemBackground(dismissState: SwipeToDismissBoxState) {
     val color = when (dismissState.dismissDirection) {

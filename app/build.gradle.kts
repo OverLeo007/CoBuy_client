@@ -57,6 +57,10 @@ android {
 
 val cameraxVersion = "1.0.2"
 dependencies {
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation("androidx.datastore:datastore:1.1.7")
+
+
     implementation("me.zhanghai.compose.preference:library:1.1.1")
     implementation("net.engawapg.lib:zoomable:1.6.2")
     implementation("com.pusher:pusher-java-client:2.4.2")

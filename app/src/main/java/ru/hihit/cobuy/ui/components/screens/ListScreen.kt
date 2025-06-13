@@ -51,6 +51,7 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.launch
 import me.zhanghai.compose.preference.LocalPreferenceFlow
+import ru.hihit.cobuy.currency.CurrencyViewModel
 import ru.hihit.cobuy.ui.components.composableElems.FloatingActionButtonImpl
 import ru.hihit.cobuy.ui.components.composableElems.SwipeRefreshImpl
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
@@ -59,11 +60,11 @@ import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.AddProduct
 import ru.hihit.cobuy.ui.components.viewmodels.ListViewModel
 import ru.hihit.cobuy.ui.components.viewmodels.SettingKeys
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ListScreen(
     navHostController: NavHostController,
-    vm: ListViewModel
+    vm: ListViewModel,
+    currencyVm: CurrencyViewModel
 ) {
     val context = LocalContext.current
 
@@ -100,7 +101,8 @@ fun ListScreen(
             onSubmit = {
                 vm.onProductAdded(context, it)
                 openAddProductModal.value = false
-            }
+            },
+            currencyVm = currencyVm
         )
     }
 
@@ -200,6 +202,7 @@ fun ListScreen(
                     }
 
                     UniversalListItem(
+                        currencyVM = currencyVm,
                         currentItemType = productCardTypePreference.toString(),
                         product = curProduct,
                         onStatusChanged = { product -> vm.onProductStatusChanged(product) },

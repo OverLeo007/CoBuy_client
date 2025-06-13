@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">CoBuy</string>
-    <string name="api_url" translatable="false">https://cobuy.online/</string>
+    <string name="api_url" translatable="false">https://stage.cobuy.online/</string>
     <string name="account_create_success">Account created, please log in</string>
     <string name="login_success">Successful login</string>
     <string name="authorization_error">Authorization error</string>
@@ -66,5 +66,7 @@
     <string name="hidden_lists_count">Lists hidden:</string>
     <string name="show_archived_lists">Viewing archived lists</string>
     <string name="show_active_lists">Viewing active lists</string>
+    <string name="currency">Currency</string>
+    <string name="currency_description">You can choose your currency</string>
 
 </resources>

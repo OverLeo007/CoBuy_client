@@ -23,6 +23,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import me.zhanghai.compose.preference.LocalPreferenceFlow
 import ru.hihit.cobuy.App
+import ru.hihit.cobuy.currency.CurrencyViewModel
 import ru.hihit.cobuy.ui.components.screens.AuthScreen
 import ru.hihit.cobuy.ui.components.screens.GroupScreen
 import ru.hihit.cobuy.ui.components.screens.GroupsScreen
@@ -45,7 +46,7 @@ fun NavGraph(
     startDestination: String,
     navigateTo: String
 ) {
-    var lastNavigation: String = ""
+    var lastNavigation = ""
 
     navHostController.addOnDestinationChangedListener { _, dest, arguments ->
         var resRoute: String? = null
@@ -76,21 +77,6 @@ fun NavGraph(
 
             }
         }
-//        val route = dest.route ?: Route.Groups
-//        if (route == Route.Dummy) {
-//            context.saveToPreferences("last_route", Route.Groups)
-//        }
-//        val fullRoute = if (arguments != null) {
-//            var tempRoute = route
-//            arguments.keySet().forEach { key ->
-//                tempRoute = tempRoute.replace("{$key}", arguments.getString(key) ?: "")
-//            }
-//            tempRoute
-//        } else {
-//            route
-//        }
-//        context.saveToPreferences("last_route", fullRoute)
-//        Log.d("NavGraph", "new last_route saved: $fullRoute")
     }
 
     var isLoaded by remember { mutableStateOf(false) }
@@ -166,12 +152,17 @@ fun NavGraph(
                     navHostController = navHostController
                 )
             }
-            ListScreen(navHostController = navHostController, vm = vm)
+            ListScreen(
+                navHostController = navHostController,
+                vm = vm,
+                currencyVm = vms[Route.Currency] as CurrencyViewModel
+            )
         }
         composable(Route.Settings) {
             SettingsScreen(
                 navHostController = navHostController,
-                vm = vms[Route.Settings] as SettingsViewModel
+                vm = vms[Route.Settings] as SettingsViewModel,
+                currencyVm = vms[Route.Currency] as CurrencyViewModel
             )
         }
 

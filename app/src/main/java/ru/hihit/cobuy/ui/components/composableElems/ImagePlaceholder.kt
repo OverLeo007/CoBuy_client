@@ -3,6 +3,7 @@ package ru.hihit.cobuy.ui.components.composableElems
 import android.net.Uri
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +18,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import net.engawapg.lib.zoomable.rememberZoomState
 import net.engawapg.lib.zoomable.zoomable
@@ -33,9 +36,7 @@ fun ImagePlaceholder(
     onFullScreenChange: (Boolean) -> Unit = {},
     isFullText: Boolean = false
 ) {
-
-
-    if (uri == null) {
+    val placeholderContent: @Composable () -> Unit = {
         val targetColor = getColorByHash(name)
         val animatedColor by animateColorAsState(targetValue = targetColor,
             label = "placeholder color animation")
@@ -53,35 +54,75 @@ fun ImagePlaceholder(
                 modifier = if (isFullText) Modifier.align(Alignment.Center) else Modifier
             )
         }
+    }
+
+    if (uri == null) {
+        placeholderContent()
     } else {
+        val context = LocalContext.current
+        val painter = rememberAsyncImagePainter(
+            model = ImageRequest.Builder(context)
+                .data(uri)
+                .crossfade(true)
+                .build()
+        )
+        val painterState = painter.state
         if (isFullScreen) {
 
             Dialog(onDismissRequest = { onFullScreenChange(false) }) {
                 val zoomState = rememberZoomState()
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(uri)
-                        .crossfade(true)
-                        .build(),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .zoomable(zoomState),
-                    contentDescription = "Fullscreen Picture",
-                    contentScale = ContentScale.Fit,
-                    placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
-                )
+                when (painterState) {
+                    is AsyncImagePainter.State.Success -> Image(
+                        painter = painter,
+                        contentDescription = "Fullscreen Picture",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .zoomable(zoomState),
+                        contentScale = ContentScale.Fit,
+                    )
+                    is AsyncImagePainter.State.Error,
+                    is AsyncImagePainter.State.Loading,
+                    is AsyncImagePainter.State.Empty -> placeholderContent()
+
+
+                }
+//                AsyncImage(
+//                    model = ImageRequest.Builder(LocalContext.current)
+//                        .data(uri)
+//                        .crossfade(true)
+//                        .build(),
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .zoomable(zoomState),
+//                    contentDescription = "Fullscreen Picture",
+//                    contentScale = ContentScale.Fit,
+//                    placeholder = ColorPainter(MaterialTheme.colorScheme.primary),
+//                )
             }
         } else {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(uri)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = "Avatar",
-                contentScale = contentScale,
-                modifier = modifier,
-                placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
-            )
+            when (painterState) {
+                is AsyncImagePainter.State.Success -> Image(
+                    painter = painter,
+                    contentDescription = "Avatar",
+                    modifier = modifier,
+                    contentScale = contentScale
+                )
+
+                is AsyncImagePainter.State.Error,
+                is AsyncImagePainter.State.Loading,
+                is AsyncImagePainter.State.Empty -> placeholderContent()
+
+            }
+//            AsyncImage(
+//                model = ImageRequest.Builder(LocalContext.current)
+//                    .data(uri)
+//                    .crossfade(true)
+//                    .build(),
+//                contentDescription = "Avatar",
+//                contentScale = contentScale,
+//                modifier = modifier,
+//                placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
+//            )
         }
     }
 }

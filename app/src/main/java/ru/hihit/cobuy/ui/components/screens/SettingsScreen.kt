@@ -1,5 +1,7 @@
 package ru.hihit.cobuy.ui.components.screens
 
+import android.icu.util.ULocale
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,20 +25,26 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import me.zhanghai.compose.preference.ListPreferenceType
+import me.zhanghai.compose.preference.LocalPreferenceFlow
 import me.zhanghai.compose.preference.listPreference
 import me.zhanghai.compose.preference.twoTargetSwitchPreference
 import ru.hihit.cobuy.R
+import ru.hihit.cobuy.currency.CurrencyViewModel
 import ru.hihit.cobuy.ui.components.composableElems.TopAppBarImpl
 import ru.hihit.cobuy.ui.components.navigation.Route
 import ru.hihit.cobuy.ui.components.viewmodels.SettingKeys
 import ru.hihit.cobuy.ui.components.viewmodels.SettingsViewModel
+import java.util.Locale
+import android.icu.util.Currency as IcuCurrency
 
 @Composable
 fun SettingsScreen(
     navHostController: NavHostController,
-    vm: SettingsViewModel
+    vm: SettingsViewModel,
+    currencyVm: CurrencyViewModel
 ) {
 
     var isEditing by remember { mutableStateOf(false) }
@@ -64,6 +73,27 @@ fun SettingsScreen(
         SettingKeys.PRODUCT_CARD_TYPE_SHOPPING_LIST to stringResource(R.string.product_card_type_shopping_list),
 //        SettingKeys.PRODUCT_CARD_TYPE_PICTURE to stringResource(R.string.product_card_type_picture)
     )
+
+    val rates by currencyVm.rates.collectAsState()
+    val selected by currencyVm.selectedCurrency.collectAsState()
+    val locale = Locale.getDefault()
+
+    val codes = remember(rates) { rates.keys.sorted() }
+
+    val entries = codes.associateWith { code ->
+        val symbol = IcuCurrency.getInstance(code)
+            .getSymbol(ULocale.forLocale(locale))
+        "$symbol ($code)"
+    }
+    val currencyTitleStr = stringResource(R.string.currency)
+    val currencySummaryStr = stringResource(R.string.currency_description)
+
+    val preferences by LocalPreferenceFlow.current.collectAsStateWithLifecycle()
+    preferences.asMap().let {
+        val code = it.getOrDefault(SettingKeys.CURRENCY, "RUB") as String
+        Log.d("Settings", "Preferences updated $code")
+        currencyVm.onCurrencySelected(code)
+    }
 
     Scaffold(
         topBar = {
@@ -134,205 +164,23 @@ fun SettingsScreen(
                 summary = { Text(text = productCartTypeDescStr) },
                 type = ListPreferenceType.ALERT_DIALOG,
             )
+
+            listPreference(
+                key = SettingKeys.CURRENCY,
+                defaultValue = "RUB",
+                values = codes,
+                title = { Text(text = currencyTitleStr) },
+                summary = { Text(text = currencySummaryStr) },
+                type = ListPreferenceType.DROPDOWN_MENU,
+                enabled = { true },
+                valueToText = { code ->
+                    val symbol = IcuCurrency.getInstance(code).getSymbol(ULocale.forLocale(locale))
+                    AnnotatedString("$symbol ($code)")
+                }
+            )
+
         }
     }
-
-//    Box(modifier = Modifier.fillMaxSize()) {
-//        Column {
-//
-//
-//            Spacer(modifier = Modifier.size(20.dp))
-
-//            Column(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                AsyncImage(
-//                    model = ImageRequest.Builder(LocalContext.current)
-//                        .data(vm.imageUri)
-//                        .crossfade(true)
-//                        .build(),
-//                    contentDescription = "Avatar",
-//                    contentScale = ContentScale.Fit,
-//                    modifier = Modifier
-//                        .size(127.dp)
-//                        .clip(CircleShape)
-//                        .clickable {
-//                            launcher.launch("image/*")
-//                        },
-//                    placeholder = ColorPainter(MaterialTheme.colorScheme.primary)
-//
-//                )
-//                Spacer(modifier = Modifier.size(10.dp))
-//                Row(
-//                    horizontalArrangement = Arrangement.Center,
-//                    verticalAlignment = Alignment.CenterVertically
-//                ) {
-//                    Icon(
-//                        painterResource(id = R.drawable.edit_square_24px),
-//                        contentDescription = "List Icon",
-//                        modifier = Modifier
-//                            .sizeIn(maxHeight = MaterialTheme.typography.titleLarge.fontSize.value.dp),
-//                        tint = Color.Transparent
-//                    )
-//                    if (isEditing) {
-//                        OutlinedTextField(
-////                            modifier = Modifier.weight(1F),
-//                            value = text,
-//                            onValueChange = { newText -> text = newText },
-//                            keyboardOptions = KeyboardOptions(
-//                                keyboardType = KeyboardType.Text,
-//                                imeAction = ImeAction.Done
-//                            ),
-//                            keyboardActions = KeyboardActions(
-//                                onDone = {
-//                                    if (text.length in 3..100) {
-//                                        isEditing = false
-//                                        isError = false
-//                                        vm.onNameChanged(text)
-//                                    }
-//                                    isError = true
-//                                }
-//                            ),
-//                            singleLine = true
-//                        )
-//
-//                    } else {
-//                        Text(
-////                            modifier = Modifier.weight(1F),
-//                            text = text,
-//                            fontSize = MaterialTheme.typography.titleLarge.fontSize,
-//                            maxLines = 1,
-//                            overflow = TextOverflow.Ellipsis
-//                        )
-//                    }
-//                    IconButton(
-//                        onClick = {
-//                            isEditing = true
-//                        },
-//                        enabled = !isEditing
-//                    ) {
-//                        Icon(
-//                            painterResource(id = R.drawable.edit_square_24px),
-//                            contentDescription = "List Icon",
-//                            modifier = Modifier
-//                                .sizeIn(maxHeight = MaterialTheme.typography.titleLarge.fontSize.value.dp),
-//                            tint = MaterialTheme.colorScheme.onTertiary
-//                        )
-//                    }
-//                }
-//            }
-//            Spacer(modifier = Modifier.size(20.dp))
-//            LazyColumn {
-//                item {
-//                    Text(
-//                        text = "Notification settings",
-//                        modifier = Modifier
-//                            .padding(
-//                                PaddingValues(
-//                                    start = 16.dp,
-//                                    end = 8.dp,
-//                                    top = 8.dp,
-//                                    bottom = 8.dp
-//                                )
-//                            ),
-//                        color = MaterialTheme.colorScheme.onTertiary,
-//                    )
-//                }
-//                items(10) {
-//                    var checked by remember {
-//                        mutableStateOf(true)
-//                    }
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .background(MaterialTheme.colorScheme.primaryContainer)
-//                            .padding(
-//                                PaddingValues(
-//                                    start = 16.dp,
-//                                    end = 8.dp,
-//                                    top = 8.dp,
-//                                    bottom = 8.dp
-//                                )
-//                            ),
-//                        horizontalArrangement = Arrangement.SpaceBetween,
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text(
-//                            text = "Notification $it",
-//                        )
-//                        val num = it
-//                        Switch(
-//                            checked = checked,
-//                            onCheckedChange = {
-//                                checked = it
-//                                Toast.makeText(
-//                                    context,
-//                                    "Notification $num is ${if (it) "enabled" else "disabled"}",
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
-//                            }
-//                        )
-//
-//                    }
-//                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
-//                }
-//                item {
-//                    Text(
-//                        text = "Other settings",
-//                        modifier = Modifier
-//                            .padding(
-//                                PaddingValues(
-//                                    start = 16.dp,
-//                                    end = 8.dp,
-//                                    top = 8.dp,
-//                                    bottom = 8.dp
-//                                )
-//                            ),
-//                        color = MaterialTheme.colorScheme.onTertiary,
-//                    )
-//                }
-//                items(5) {
-//                    var checked by remember {
-//                        mutableStateOf(true)
-//                    }
-//                    Row(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .background(MaterialTheme.colorScheme.primaryContainer)
-//                            .padding(
-//                                PaddingValues(
-//                                    start = 16.dp,
-//                                    end = 8.dp,
-//                                    top = 8.dp,
-//                                    bottom = 8.dp
-//                                )
-//                            ),
-//                        horizontalArrangement = Arrangement.SpaceBetween,
-//                        verticalAlignment = Alignment.CenterVertically
-//                    ) {
-//                        Text(
-//                            text = "Setting $it",
-//                        )
-//                        val num = it
-//                        Switch(
-//                            checked = checked,
-//                            onCheckedChange = {
-//                                checked = it
-//                                Toast.makeText(
-//                                    context,
-//                                    "Setting $num is ${if (it) "enabled" else "disabled"}",
-//                                    Toast.LENGTH_SHORT
-//                                ).show()
-//                            }
-//                        )
-//
-//                    }
-//                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceTint)
-//                }
-//            }
-//        }
-//    }
 
 
 }

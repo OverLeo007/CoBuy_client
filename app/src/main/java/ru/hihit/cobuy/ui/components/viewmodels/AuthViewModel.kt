@@ -12,6 +12,7 @@ import ru.hihit.cobuy.App
 import ru.hihit.cobuy.api.Api
 import ru.hihit.cobuy.api.auth.LoginRequest
 import ru.hihit.cobuy.api.auth.LoginResponse
+import ru.hihit.cobuy.api.auth.LoginResponseData
 import ru.hihit.cobuy.api.auth.RegisterRequest
 import ru.hihit.cobuy.api.requesters.AuthRequester
 import ru.hihit.cobuy.api.requesters.RequestLauncher
@@ -65,7 +66,7 @@ class AuthViewModel : ViewModel() {
                 onSuccess = { response ->
                     apiResponse = "OK"
                     resetErrors()
-                    setUpUser(response)
+                    setUpUser(response.loginResponseData)
                 },
                 onServerError = { parsedError ->
                     apiResponse = "FAIL"
@@ -84,7 +85,7 @@ class AuthViewModel : ViewModel() {
 
 
 
-    private fun setUpUser(loginResponse: LoginResponse) {
+    private fun setUpUser(loginResponse: LoginResponseData) {
         val context = App.getContext()
         context.saveToPreferences("auth_token", loginResponse.token)
         context.saveUserDataToPreferences(loginResponse.data)

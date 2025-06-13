@@ -178,7 +178,6 @@ class GroupViewModel(
             )
             return
         }
-
     }
 
     private fun onWsError(message: String?, e: Exception?) {
@@ -231,7 +230,6 @@ class GroupViewModel(
     }
 
     private fun getLists() {
-
         viewModelScope.launch {
             ListRequester.getLists(groupId).handle(
                 onSuccess = { response ->
@@ -248,7 +246,6 @@ class GroupViewModel(
                 }
             )
         }
-
     }
 
     fun onRefresh() {
@@ -445,7 +442,7 @@ class GroupViewModel(
 
     private fun updateListArchiveState(list: ListData?) {
         list?.let { list ->
-            val logMsg = if (list.hidden == true) {
+            val logMsg = if (list.hidden) {
                 "archived"
             } else {
                 "unarchived"

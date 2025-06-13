@@ -73,8 +73,6 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun CoBuyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false,
     preferenceFlow: MutableStateFlow<Preferences>? = null,
     content: @Composable () -> Unit
 ) {
@@ -83,7 +81,6 @@ fun CoBuyTheme(
 
     preferences?.value?.let {
         Log.d("CoBuyTheme", "Preferences updated ${it.asMap().entries}")
-        Log.d("CoBuyTheme", "Preferences updated ${preferences.value.javaClass.name}")
     }
 
     val colorScheme = when (themePreference) {

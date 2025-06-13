@@ -22,9 +22,11 @@ interface ListsApiService {
     suspend fun getListById(@Path("id") id: Int): Response<GetUpdateListResponse>
 
     @PUT("api/list/{id}")
-    suspend fun updateList(@Path("id") id: Int, @Body request: UpdateListRequest): Response<GetUpdateListResponse>
+    suspend fun updateList(
+        @Path("id") id: Int,
+        @Body request: UpdateListRequest
+    ): Response<GetUpdateListResponse>
 
     @DELETE("api/list/{id}")
     suspend fun deleteList(@Path("id") id: Int): Response<Unit>
-
 }

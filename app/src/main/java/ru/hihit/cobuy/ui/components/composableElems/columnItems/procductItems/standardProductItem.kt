@@ -26,7 +26,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +50,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.models.ProductData
+import ru.hihit.cobuy.currency.CurrencyViewModel
 import ru.hihit.cobuy.models.ProductStatus
 import ru.hihit.cobuy.ui.components.composableElems.modals.listScreen.ProductModal
 import ru.hihit.cobuy.ui.theme.getColorByHash
@@ -59,11 +61,11 @@ import ru.hihit.cobuy.utils.getFromPreferences
 
 @OptIn(
     ExperimentalFoundationApi::class,
-    ExperimentalComposeUiApi::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalComposeUiApi::class
 )
 @Composable
 fun StandardProductItem(
+    currencyVm: CurrencyViewModel,
     product: ProductData = ProductData(),
     onStatusChanged: (ProductData) -> Unit = {},
     onImageSelected: (ProductData) -> Unit = {},
@@ -74,6 +76,21 @@ fun StandardProductItem(
 ) {
     var isBought by remember { mutableStateOf(product.status == ProductStatus.BOUGHT) }
     var isPlanned by remember { mutableStateOf(product.status == ProductStatus.PLANNED) }
+
+    val selectedCurrencyCode by currencyVm.selectedCurrency.collectAsStateWithLifecycle()
+    val rates by currencyVm.rates.collectAsStateWithLifecycle()
+
+    val convertedPrice by remember(rates, selectedCurrencyCode, product.price) {
+        derivedStateOf {
+            currencyVm.fromRub(product.price?.toDouble())
+        }
+    }
+
+    val price by remember(rates, selectedCurrencyCode, product.price) {
+        derivedStateOf {
+            currencyVm.format(convertedPrice, selectedCurrencyCode)
+        }
+    }
 
     fun updateStatus(newStatus: ProductStatus) {
         product.status = newStatus
@@ -99,7 +116,8 @@ fun StandardProductItem(
                     openModal.value = false
                 },
                 onImageSelected = onImageSelected,
-                onDismiss = { openModal.value = false }
+                onDismiss = { openModal.value = false },
+                currencyVm = currencyVm
             )
     }
 
@@ -209,46 +227,71 @@ fun StandardProductItem(
                         ) {
                             Text(
                                 modifier = Modifier.fillMaxWidth(0.5F),
-                                text = product.price.toString() + "₽", //FIXME Валюту надо выбирать в настройках
+                                text = price,
                                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 24.sp)
                             )
 
                             val context = LocalContext.current
-                            if (product.buyer == null || context.getFromPreferences("user_id", -1) == product.buyer.id) {
+                            if (product.buyer == null || context.getFromPreferences(
+                                    "user_id",
+                                    -1
+                                ) == product.buyer.id
+                            ) {
                                 Column {
-                                    val buyButtonColor = if (isBought) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
-                                    val planButtonColor = if (isPlanned) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
+                                    val buyButtonColor =
+                                        if (isBought) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
+                                    val planButtonColor =
+                                        if (isPlanned) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.background
 
                                     Button(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = {
-                                            val newStatus = if (isBought) ProductStatus.NONE else ProductStatus.BOUGHT
+                                            val newStatus =
+                                                if (isBought) ProductStatus.NONE else ProductStatus.BOUGHT
                                             updateStatus(newStatus)
                                         },
                                         colors = ButtonDefaults.buttonColors(containerColor = buyButtonColor),
-                                        border = if (isBought) null else BorderStroke(1.dp, color = MaterialTheme.colorScheme.surfaceTint),
+                                        border = if (isBought) null else BorderStroke(
+                                            1.dp,
+                                            color = MaterialTheme.colorScheme.surfaceTint
+                                        ),
                                         shape = RoundedCornerShape(8.dp),
                                         contentPadding = PaddingValues(12.dp)
                                     ) {
-                                        Text(if (isBought) stringResource(id = R.string.bought_word) else stringResource(id = R.string.buy_word))
+                                        Text(
+                                            if (isBought) stringResource(id = R.string.bought_word) else stringResource(
+                                                id = R.string.buy_word
+                                            )
+                                        )
                                     }
 
                                     Button(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = {
-                                            val newStatus = if (isPlanned) ProductStatus.NONE else ProductStatus.PLANNED
+                                            val newStatus =
+                                                if (isPlanned) ProductStatus.NONE else ProductStatus.PLANNED
                                             updateStatus(newStatus)
                                         },
                                         colors = ButtonDefaults.buttonColors(containerColor = planButtonColor),
-                                        border = if (isPlanned) null else BorderStroke(1.dp, color = MaterialTheme.colorScheme.surfaceTint),
+                                        border = if (isPlanned) null else BorderStroke(
+                                            1.dp,
+                                            color = MaterialTheme.colorScheme.surfaceTint
+                                        ),
                                         shape = RoundedCornerShape(8.dp),
                                         contentPadding = PaddingValues(12.dp)
                                     ) {
-                                        Text(if (isPlanned) stringResource(id = R.string.planned_word) else stringResource(id = R.string.plan_word))
+                                        Text(
+                                            if (isPlanned) stringResource(id = R.string.planned_word) else stringResource(
+                                                id = R.string.plan_word
+                                            )
+                                        )
                                     }
                                 }
                             } else {
-                                val statusWord = if (product.status == ProductStatus.BOUGHT) stringResource(id = R.string.bought_by_word) else stringResource(id = R.string.planned_by_word)
+                                val statusWord =
+                                    if (product.status == ProductStatus.BOUGHT) stringResource(id = R.string.bought_by_word) else stringResource(
+                                        id = R.string.planned_by_word
+                                    )
                                 Text(
                                     text = statusWord + ' ' + product.buyer.name,
                                     style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp)

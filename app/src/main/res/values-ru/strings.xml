@@ -65,5 +65,7 @@
     <string name="hidden_lists_count">"Списков скрыто: "</string>
     <string name="show_archived_lists">"Просмотр архивированных списков "</string>
     <string name="show_active_lists">Просмотр активных списков</string>
+    <string name="currency">Валюта</string>
+    <string name="currency_description">Вы можете выбрать валюту</string>
 
 </resources>

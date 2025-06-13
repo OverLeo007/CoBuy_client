@@ -53,6 +53,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -79,8 +80,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.core.content.FileProvider
 import androidx.core.text.isDigitsOnly
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ru.hihit.cobuy.R
 import ru.hihit.cobuy.api.models.ProductData
+import ru.hihit.cobuy.currency.CurrencyConverter
+import ru.hihit.cobuy.currency.CurrencyViewModel
 import ru.hihit.cobuy.ui.components.composableElems.ImagePlaceholder
 import java.io.File
 
@@ -93,7 +97,8 @@ fun ProductModal(
     onDismiss: () -> Unit = {},
     onImageSelected: (ProductData) -> Unit = {},
     namePlaceholder: String = stringResource(R.string.product_name),
-    descriptionPlaceholder: String = stringResource(R.string.product_description)
+    descriptionPlaceholder: String = stringResource(R.string.product_description),
+    currencyVm: CurrencyViewModel
 ) {
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -110,7 +115,6 @@ fun ProductModal(
 
     var quantity by remember { mutableIntStateOf(product.quantity ?: 0) } // TODO: product.quantity
 
-    var price by remember { mutableIntStateOf(product.price ?: 0) }
 
     var isImageFullScreen by remember { mutableStateOf(false) }
 
@@ -160,6 +164,22 @@ fun ProductModal(
     val animDuration = 150
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
+
+    val selectedCurrencyCode by currencyVm.selectedCurrency.collectAsStateWithLifecycle()
+    val rates by currencyVm.rates.collectAsStateWithLifecycle()
+
+    val convertedPrice by remember(rates, selectedCurrencyCode, product.price) {
+        derivedStateOf {
+            currencyVm.fromRub(product.price?.toDouble() ?: 0.0, selectedCurrencyCode)
+        }
+    }
+
+    var priceInput by remember(selectedCurrencyCode, product.price) {
+        mutableStateOf(convertedPrice.toString())
+    }
+
+    val currencySymbol = CurrencyConverter.getSymbol(selectedCurrencyCode)
 
 
 
@@ -434,32 +454,41 @@ fun ProductModal(
                         OutlinedTextField(
                             modifier = Modifier.weight(0.5F),
                             singleLine = true,
-                            value = price.toString(),
+                            value = priceInput,
                             onValueChange = {
-                                price =
-                                    if (it.isDigitsOnly() && it.isNotEmpty() && it.length <= 5) it.toInt() else 0
+                                    raw ->
+                                val cleaned = raw.replace(",", ".")
+                                    .replace(Regex("[^0-9.]"), "")
+
+                                val noLeading = cleaned.trimStart('0').ifEmpty { "0" }
+                                val noTrailing = if (noLeading.contains(".")) {
+                                    noLeading
+                                        .trimEnd('0')
+                                        .trimEnd('.')
+                                } else noLeading
+
+                                priceInput = noTrailing
                             },
                             label = { Text("Цена") }, // Fixme: add price string
                             shape = RoundedCornerShape(16.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         )
-                        Text(text = "₽", modifier = Modifier.weight(0.1F)) //FIXME: add currency
+                        Text(text = currencySymbol, modifier = Modifier.weight(0.1F))
                     }
                     Button(
                         onClick = {
-                            if (imageUri != product.productImgUrl) {
-                                onImageSelected(
-                                    product.copy(productImgUrl = imageUri)
-                                )
+                            val userValue = priceInput.toDoubleOrNull()
+                            var price = product.price?.toDouble()
+                            if (userValue != null) {
+                                val finalRub = currencyVm.toRub(userValue, selectedCurrencyCode)
+                                price = finalRub
                             }
-                            onSubmit(
-                                product.copy(
-                                    name = nameText,
-                                    description = descriptionText,
-                                    quantity = quantity,
-                                    price = price,
-                                )
-                            )
+                            onSubmit(product.copy(
+                                name = nameText,
+                                description = descriptionText,
+                                quantity = quantity,
+                                price = price?.toInt()
+                            ))
                         },
                         modifier = Modifier
                             .fillMaxWidth()

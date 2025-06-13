@@ -11,5 +11,7 @@ interface Route {
         const val Scanner = "scan_screen"
         const val Authorization = "auth_screen"
         const val Dummy = "dummy_screen"
+
+        const val Currency = "currency"
     }
 }

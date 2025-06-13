@@ -21,10 +21,8 @@ internal object RequestLauncher {
                 if (body != null) {
                     Result.success(body)
                 } else if (T::class == Unit::class) {
-                    // Если тип T это Unit, то возвращаем успех без данных
                     Result.success(Unit as T)
                 } else {
-                    // Для других типов - ошибка
                     Result.failure(Exception("$errorMessage - Пустой ответ от сервера"))
                 }
             } else {

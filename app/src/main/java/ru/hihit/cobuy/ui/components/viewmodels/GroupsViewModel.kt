@@ -138,15 +138,21 @@ class GroupsViewModel : ViewModel() {
                 },
                 onServerError = { parsedError ->
                     Log.w("GroupsViewModel", "joinGroup: $parsedError")
-                    parsedError?.containsKey("error")?.let {
-                        Log.d("GroupsViewModel", "Body is contain error")
-                        val error = parsedError["error"] as String
-                        scanError = error
+
+                    parsedError?.get("error")?.let { value ->
+                        val error = value as? String
+                        if (error != null) {
+                            Log.d("GroupsViewModel", "Body contains error - $error")
+                            scanError = error
+                        }
                     }
-                    parsedError?.containsKey("message")?.let {
-                        Log.d("GroupsViewModel", "Body is contain message")
-                        val error = parsedError["message"] as String
-                        scanError = error
+
+                    parsedError?.get("message")?.let { value ->
+                        val error = value as? String
+                        if (error != null) {
+                            Log.d("GroupsViewModel", "Body contains message - $error")
+                            scanError = error
+                        }
                     }
                 },
                 onOtherError = {

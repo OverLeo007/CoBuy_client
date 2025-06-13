@@ -1,5 +1,6 @@
 package ru.hihit.cobuy.ui.components.viewmodels
 
+import android.icu.util.Currency
 import androidx.lifecycle.ViewModel
 import ru.hihit.cobuy.App
 import ru.hihit.cobuy.api.models.UserData
@@ -37,4 +38,9 @@ object SettingKeys {
     const val THEME_LIGHT = "theme_light"
     const val THEME_DARK = "theme_dark"
     const val THEME_SYSTEM = "theme_system"
+
+    const val CURRENCY = "currency"
+    const val CURRENCY_DESC = "currency_description"
+//    const val currency: Currency
+
 }

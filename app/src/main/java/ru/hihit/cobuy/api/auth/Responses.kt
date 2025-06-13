@@ -11,7 +11,7 @@ data class RegisterResponse(
 )
 
 @Serializable
-data class LoginResponse(
+data class LoginResponseData(
     @SerialName(value = "user")
     val data: UserData,
     @SerialName(value = "accessToken")
@@ -24,4 +24,10 @@ data class LoginResponse(
 data class CheckLoginResponse(
     @SerialName("data")
     val userData: UserData
+)
+
+@Serializable
+data class LoginResponse(
+    @SerialName(value = "data")
+    val loginResponseData: LoginResponseData
 )
